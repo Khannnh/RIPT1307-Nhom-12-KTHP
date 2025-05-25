@@ -36,7 +36,19 @@
 		component: './RandomUser',
 		icon: 'ArrowsAltOutlined',
 	},
-
+	{
+		path: '/muondosinhvien',
+		name: 'Hệ thống mượn đồ sinh viên',
+		icon: 'RetweetOutlined',
+		routes: [
+		  {
+			path: '/muondosinhvien/home',
+			name: 'Trang chủ',
+			component: '@/pages/MuonDo/home',
+			icon: 'HomeOutlined',
+		  },
+		],
+	},
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',

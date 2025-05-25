@@ -1,0 +1,160 @@
+.main-header {
+  background-color: #ffffff; /* Giữ nguyên màu trắng cho header chính */
+  padding: 29px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  .header-content {
+    max-width: 1200px; /* Chiều rộng tối đa của nội dung */
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px; /* Khoảng cách hai bên */
+  }
+
+  .logo {
+    a {
+      font-size: 15px;
+      font-weight: bold;
+      color: #ca2020;
+      text-decoration: none;
+    }
+  }
+
+  .main-nav {
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+
+      li {
+        margin-left: 30px; /* Khoảng cách giữa các mục menu */
+
+        a {
+          text-decoration: none;
+          color: #555;
+          font-weight: 500;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: #cc4b10; /* Màu khi hover */
+          }
+        }
+      }
+    }
+  }
+
+  .header-actions {
+    button {
+      background-color: #ca2020;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #f57d37;
+      }
+    }
+  }
+}
+
+  /* PHẦN BANNER: Cấu hình mới */
+  .header-banner {
+    background-color: #ffffff; 
+    padding: 20px 20px; 
+    color: #333;
+    display: flex; 
+    justify-content: center; /* Căn giữa nội dung banner (text và ảnh) */
+    align-items: center; /* Căn giữa các mục theo chiều dọc */
+    max-width: 1100px ; /* Giới hạn chiều rộng tối đa của banner */
+    margin: 0 auto; /* Căn giữa banner trong không gian của main-header */
+
+    .header-text-content {
+      flex: 1; /* Cho phép phần text chiếm không gian còn lại */
+      margin-right: 40px; /* Khoảng cách giữa phần text và ảnh */
+      display: flex;
+      flex-direction: column; /* Quan trọng: Xếp các dòng text theo cột */
+      align-items: flex-start; /* Căn lề trái cho text bên trong */
+      text-align: left; /* Đảm bảo văn bản căn lề trái */
+    }
+
+    .header-image {
+      flex-shrink: 0; /* Đảm bảo ảnh không bị co lại */
+      width: 450px; 
+      height: auto; /* Chiều cao tự động để giữ tỉ lệ */
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Đảm bảo ảnh vừa khung mà không bị cắt hoặc méo */
+      }
+    }
+
+    .header-description {
+      color: #ca2020;
+      font-weight: bold;
+      font-size: 35px;
+      margin-bottom: 10px; /* Khoảng cách giữa description và subtitle */
+      transition: color 0.3s ease;
+      &:hover {
+        color: #f57d37;
+      }
+    }
+
+    .header-subtitle {
+      color: #555;
+      font-size: 16px;
+      margin-top: 0; /* Đảm bảo không có margin top thừa */
+    }
+  }
+  
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-header {
+    .header-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .main-nav {
+      margin-top: 15px;
+      ul {
+        flex-direction: column;
+        li {
+          margin: 10px 0;
+        }
+      }
+    }
+
+    .header-actions {
+      margin-top: 15px;
+    }
+  }
+
+  /* Responsive cho PHẦN BANNER */
+  .header-banner {
+    flex-direction: column; /* Xếp chồng ảnh và text trên màn hình nhỏ */
+    text-align: center; /* Căn giữa nội dung khi xếp chồng */
+    padding: 20px; /* Giảm padding trên mobile */
+
+    .header-text-content {
+      margin-right: 0; /* Bỏ margin phải khi xếp chồng */
+      margin-bottom: 20px; /* Khoảng cách giữa text và ảnh khi xếp chồng */
+      align-items: center; /* Căn giữa các dòng text trên mobile */
+      text-align: center; /* Căn giữa văn bản trên mobile */
+    }
+
+    .header-image {
+      width: 180px; /* Giảm kích thước ảnh trên mobile */
+      height: auto;
+    }
+  }
+}
