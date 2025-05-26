@@ -36,7 +36,12 @@
 		component: './RandomUser',
 		icon: 'ArrowsAltOutlined',
 	},
-
+	{
+		name: 'Quản lý thiết bị',
+		path: '/danh-muc/quan-ly-thiet-bi',
+		icon: 'AppstoreOutlined',
+		component: './DanhMuc/QuanLyThietBi',
+	},
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
