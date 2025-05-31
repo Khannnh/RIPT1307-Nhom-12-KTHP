@@ -9,7 +9,8 @@ export default defineConfig({
 	hash: true,
 	antd: {},
 	dva: {
-		hmr: true,
+		hmr: false,
+		immer: true,
 	},
 	layout: {
 		// https://umijs.org/zh-CN/plugins/plugin-layout
@@ -31,7 +32,27 @@ export default defineConfig({
 	targets: {
 		ie: 11,
 	},
-	routes,
+	routes: [
+		{
+			path: '/user',
+			layout: false,
+			routes: [
+				{
+					path: '/user/login',
+					component: './user/Login',
+				},
+				{
+					path: '/user/register',
+					component: './user/Register',
+				},
+				{
+					path: '/user',
+					redirect: '/user/login',
+				},
+			],
+		},
+		...routes,
+	],
 	// Theme for antd: https://ant.design/docs/react/customize-theme-cn
 	theme: {
 		'primary-color': defaultSettings.primaryColor,
