@@ -1,33 +1,14 @@
 import React from 'react';
-import Header from '@/common/header'; // Đường dẫn tới Header component
-import Footer from '@/common/footer'; // Đường dẫn tới Footer component
-// Import ảnh và CSS cho phần banner
-import muonDoImage from '@/assets/muon do.jpg'; 
-import '@/common/header.less'; 
+import Navbar from '@/common/Navbar_tem';
+import Hero from '@/common/Hero_tem';
+import Footer from '@/common/Footer_tem';
 
 const HomePage: React.FC = () => {
   return (
     <div className="home-page-container">
-      {/* Sử dụng Header component (chỉ còn thanh điều hướng sticky) */}
-      <Header />
-
-      {/* PHẦN BANNER NÀY SẼ CUỘN ĐI KHI BẠN SCROLL XUỐNG DƯỚI */}
-      {/* Đây là phần banner đã được di chuyển từ Header.tsx sang */}
-      <div className="header-banner">
-        <div className="header-text-content">
-          <div className="header-description">
-            Mượn trả đồ dễ dàng
-          </div>
-          <div className="header-subtitle">
-            Chào mừng bạn đến với hệ thống mượn/ trả đồ sinh viên,nơi bạn có thể dễ dàng mượn và trả đồ dùng học tập và thiết bị cá nhân việc này giúp bạn tiết kiệm chi phí và bảo vệ môi trường
-          </div>
-        </div>
-        <div className="header-image">
-          <img src={muonDoImage} alt="He thong muon tra do sinh vien" />
-        </div>
-      </div>
-
-      {/* Đây là nội dung chính của trang chủ (giữ nguyên tất cả các phần bạn đã có) */}
+      <Navbar />
+      <Hero />
+      {/* Đây là nội dung chính của trang chủ*/}
       <main className="home-content">
         <h1>Welcome to Our Website!</h1>
         <p>This is the main content area of your home page.</p>
@@ -74,5 +55,4 @@ const HomePage: React.FC = () => {
     </div>
   );
 };
-
 export default HomePage;
