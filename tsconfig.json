@@ -35,6 +35,6 @@
 		".stylelintrc.js",
 		".prettierrc.js",
 		"mock/*"
-	],
+, "../KTHP-feature/src/common"	],
 	"exclude": ["node_modules", "build", "dist", "scripts", "src/.umi/*", "webpack", "jest"]
 }

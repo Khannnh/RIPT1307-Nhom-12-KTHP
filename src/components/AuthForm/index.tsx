@@ -130,7 +130,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, loading, onFinish, onSuccess 
         {type === 'register' && (
           <div style={{ textAlign: 'center' }}>
             <Text>Đã có tài khoản? </Text>
-            <a onClick={() => history.push('/user/login')}>Đăng nhập</a>
+            <a onClick={() => history.push('/user/auth/login')}>Đăng nhập</a>
           </div>
         )}
       </Form>

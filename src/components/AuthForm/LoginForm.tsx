@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Input, Button, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { validatePassword } from './utils';
+import { history } from 'umi';
 
 const { Title, Text } = Typography;
 
@@ -30,7 +30,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ loading, onFinish }) => {
             {
               validator: (_, value) => {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (emailRegex.test(value)) {
+                if (!value || emailRegex.test(value)) {
                   return Promise.resolve();
                 }
                 return Promise.reject(new Error('Vui lòng nhập email hợp lệ!'));
@@ -49,9 +49,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ loading, onFinish }) => {
           name="password"
           rules={[
             { required: true, message: 'Vui lòng nhập mật khẩu!' },
-            { validator: validatePassword }
           ]}
-          extra={<Text type="secondary">Chúc bạn 1 ngày mới tốt lành!</Text>}
+          extra={<Text type="secondary">Nhập mật khẩu của bạn</Text>}
         >
           <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu" size="large" />
         </Form.Item>
@@ -67,6 +66,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ loading, onFinish }) => {
             Đăng nhập
           </Button>
         </Form.Item>
+        <div style={{ textAlign: 'center' }}>
+          <Text>Chưa có tài khoản? </Text>
+          <a onClick={() => history.push('/user/register')}>Đăng ký</a>
+        </div>
       </Form>
     </div>
   );
