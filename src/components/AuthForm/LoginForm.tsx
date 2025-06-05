@@ -51,7 +51,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ loading, onFinish }) => {
             { required: true, message: 'Vui lòng nhập mật khẩu!' },
             { validator: validatePassword }
           ]}
-          extra={<Text type="secondary">CHúc bạn 1 ngày mới tốt lành!</Text>}
+          extra={<Text type="secondary">Chúc bạn 1 ngày mới tốt lành!</Text>}
         >
           <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu" size="large" />
         </Form.Item>

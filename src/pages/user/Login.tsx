@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { message } from 'antd';
+import { message, Button } from 'antd';
 import { history, useDispatch } from 'umi';
 import LoginForm from '@/components/AuthForm/LoginForm';
+import { request } from 'umi';
 
 interface LoginResponse {
-  role_ids?: string[];
+  role?: string;
+  access_token?: string;
   [key: string]: any;
 }
 
@@ -15,27 +17,42 @@ const Login: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      const response = await dispatch({
-        type: 'admin/login',
-        payload: {
-          email: values.username,
-          password: values.password
-        },
-      }) as LoginResponse;
+      // Thử đăng nhập với tư cách admin trước
+      try {
+        const adminResponse = await request('/admin/login', {
+          method: 'POST',
+          data: {
+            phone: values.username,
+            password: values.password,
+          },
+        });
 
-      // Kiểm tra role_ids từ response
-      const roleIds = response?.role_ids || [];
-      const isAdmin = roleIds.includes('6839fe6bccd38e4b214bca7f');
+        if (adminResponse?.access_token) {
+          // Lưu token admin
+          localStorage.setItem('admin_token', adminResponse.access_token);
+          message.success('Đăng nhập thành công với quyền Admin!');
+          history.push('/admin/devices');
+          if (onSuccess) onSuccess();
+          return;
+        }
+      } catch (adminError) {
+        // Nếu đăng nhập admin thất bại, thử đăng nhập user thường
+        const response = await dispatch({
+          type: 'user/login',
+          payload: values,
+        }) as LoginResponse;
 
-      if (isAdmin) {
-        message.success('Đăng nhập thành công với quyền Admin!');
-        history.push('/admin');
-      } else {
-        message.success('Đăng nhập thành công!');
-        history.push('/');
+        const userRole = response?.role;
+        if (userRole === 'admin') {
+          message.success('Đăng nhập thành công với quyền Admin!');
+          history.push('/admin/devices');
+        } else {
+          message.success('Đăng nhập thành công!');
+          history.push('/user/devices');
+        }
+
+        if (onSuccess) onSuccess();
       }
-
-      if (onSuccess) onSuccess();
     } catch (err: any) {
       message.error(err?.response?.data?.message || 'Sai tài khoản hoặc mật khẩu!');
     }
