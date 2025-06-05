@@ -34,95 +34,91 @@ const UserModel: UserModelType = {
   effects: {
     *login({ payload }, { call, put }): Generator<any, any, any> {
       const response = yield call(loginUser, payload);
-      if (response?.data) {
-        localStorage.setItem('token', response.data.access_token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (response?.data.data) {
+        localStorage.setItem('token', response.data.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
         yield put({
           type: 'saveCurrentUser',
-          payload: response.data.user,
+          payload: response.data.data.user,
         });
         yield put({
           type: 'saveToken',
-          payload: response.data.access_token,
+          payload: response.data.data.access_token,
         });
       }
       return response;
     },
 
     *loginUnified({ payload }, { call, put }): Generator<any, any, any> {
-      console.log('Attempting unified login with:', { username: payload.username });
-      
-      // Thử đăng nhập với tư cách admin trước
-      try {
-        console.log('Trying admin login first...');
-        const adminResponse = yield call(loginAdmin, payload);
-        
-        console.log('Admin login response:', adminResponse?.data ? 'Success' : 'Failed');
-        
-        if (adminResponse?.data?.access_token) {
-          console.log('Admin login successful, setting tokens and redirecting');
-          localStorage.setItem('token', adminResponse.data.access_token);
-          localStorage.setItem('admin_token', adminResponse.data.access_token);
-          localStorage.setItem('user', JSON.stringify(adminResponse.data.user || {}));
-          localStorage.setItem('role', 'admin');
-          
-          yield put({
-            type: 'saveCurrentUser',
-            payload: adminResponse.data.user || {},
-          });
-          yield put({
-            type: 'saveToken',
-            payload: adminResponse.data.access_token,
-          });
-          yield put({
-            type: 'saveRole',
-            payload: 'admin',
-          });
-          
-          return { ...adminResponse.data, role: 'admin' };
-        }
-      } catch (error: any) {
-        console.error('Admin login error details:', error.response?.data || error.message);
-        // Nếu đăng nhập admin thất bại, tiếp tục thử đăng nhập user
-      }
-      
-      // Thử đăng nhập với tư cách user
-      try {
-        console.log('Trying user login...');
-        const userResponse = yield call(loginUser, payload);
-        
-        console.log('User login response:', userResponse?.data ? 'Success' : 'Failed');
-        
-        if (userResponse?.data?.access_token) {
-          console.log('User login successful, setting tokens and redirecting');
-          localStorage.setItem('token', userResponse.data.access_token);
-          localStorage.setItem('user', JSON.stringify(userResponse.data.user || {}));
-          localStorage.setItem('role', 'user');
-          
-          yield put({
-            type: 'saveCurrentUser',
-            payload: userResponse.data.user || {},
-          });
-          yield put({
-            type: 'saveToken',
-            payload: userResponse.data.access_token,
-          });
-          yield put({
-            type: 'saveRole',
-            payload: 'user',
-          });
-          
-          return { ...userResponse.data, role: 'user' };
-        }
-      } catch (error: any) {
-        console.error('User login error details:', error.response?.data || error.message);
-        // Nếu đăng nhập user cũng thất bại, ném lỗi
-      }
-      
-      // Nếu cả hai đều thất bại, ném lỗi
-      console.error('Both admin and user login failed');
-      throw new Error('Tài khoản hoặc mật khẩu không đúng!');
-    },
+  // Thử đăng nhập với tư cách admin trước
+  try {
+    const adminResponse = yield call(loginAdmin, payload);
+
+    // Kiểm tra dữ liệu response chính xác
+    if (adminResponse?.data?.data.access_token) {
+      console.log('Admin login response:', adminResponse.data.data);
+
+      // Lưu token và thông tin người dùng
+      localStorage.setItem('token', adminResponse.data.data.access_token);
+      localStorage.setItem('user', JSON.stringify(adminResponse.data.data.user || {}));
+      localStorage.setItem('role', 'admin');
+
+      // Cập nhật state trong store
+      yield put({
+        type: 'saveCurrentUser',
+        payload: adminResponse.data.data.user || {},
+      });
+      yield put({
+        type: 'saveToken',
+        payload: adminResponse.data.data.access_token,
+      });
+      yield put({
+        type: 'saveRole',
+        payload: 'admin',
+      });
+
+      return { ...adminResponse.data.data, role: 'admin' };
+    }
+  } catch (error: any) {
+    console.log('Admin login error:', error?.response?.data.data || error.message);
+  }
+
+  // Thử đăng nhập với tư cách user thường
+  try {
+    const userResponse = yield call(loginUser, payload);
+
+    // Kiểm tra dữ liệu response chính xác
+    if (userResponse?.data?.data.access_token) {
+      console.log('User login response:', userResponse.data.data);
+
+      // Lưu token và thông tin người dùng
+      localStorage.setItem('token', userResponse.data.data.access_token);
+      localStorage.setItem('user', JSON.stringify(userResponse.data.data.user || {}));
+      localStorage.setItem('role', 'user');
+
+      // Cập nhật state trong store
+      yield put({
+        type: 'saveCurrentUser',
+        payload: userResponse.data.data.user || {},
+      });
+      yield put({
+        type: 'saveToken',
+        payload: userResponse.data.data.access_token,
+      });
+      yield put({
+        type: 'saveRole',
+        payload: 'user',
+      });
+
+      return { ...userResponse.data.data, role: 'user' };
+    }
+  } catch (error: any) {
+    console.log('User login error:', error?.response?.data.data || error.message);
+  }
+
+  // Nếu cả hai đều thất bại, ném lỗi
+  throw new Error('Tài khoản hoặc mật khẩu không đúng!');
+},
 
     *register({ payload }, { call }): Generator<any, any, any> {
       const response = yield call(registerUser, payload);
