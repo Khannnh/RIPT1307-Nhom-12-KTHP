@@ -1,0 +1,196 @@
+@import '~antd/es/style/themes/default.less';
+@border-radius-lg: 8px; // hoặc giá trị tùy bạn chọn
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.loadingContainer {
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: @background-color-light;
+  border-radius: @border-radius-lg;
+  margin: 24px;
+}
+
+// Welcome Section
+.welcomeSection {
+  background: linear-gradient(135deg, @primary-1 0%, @primary-2 100%);
+  border-radius: @border-radius-lg;
+  padding: 48px 24px;
+  margin-bottom: 48px;
+  color: white;
+
+  .welcomeText {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 24px 0;
+  }
+
+  .welcomeImage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .welcomeIcon {
+      font-size: 120px;
+      color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+// Stats Section
+.statsSection {
+  margin-bottom: 48px;
+
+  :global {
+    .ant-card {
+      border-radius: @border-radius-lg;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    .ant-statistic-title {
+      color: @text-color-secondary;
+    }
+
+    .ant-statistic-content {
+      color: @heading-color;
+    }
+  }
+}
+
+// Devices Section
+.devicesSection {
+  margin-bottom: 48px;
+
+  .deviceCard {
+    height: 100%;
+    border-radius: @border-radius-lg;
+    transition: all 0.3s;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .deviceImage {
+      height: 160px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: @background-color-light;
+      border-radius: @border-radius-lg @border-radius-lg 0 0;
+
+      :global {
+        .anticon {
+          font-size: 64px;
+          color: @primary-color;
+        }
+      }
+    }
+
+    :global {
+      .ant-card-meta-title {
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+
+      .ant-card-meta-description {
+        color: @text-color-secondary;
+      }
+
+      .ant-card-actions {
+        border-radius: 0 0 @border-radius-lg @border-radius-lg;
+      }
+    }
+  }
+}
+
+// About Section
+.aboutSection {
+  background: @background-color-light;
+  border-radius: @border-radius-lg;
+  padding: 48px 24px;
+  margin-bottom: 48px;
+
+  .aboutImage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    background: linear-gradient(135deg, @primary-1 0%, @primary-2 100%);
+    border-radius: @border-radius-lg;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: @screen-md) {
+  .container {
+    padding: 16px;
+  }
+
+  .loadingContainer {
+    margin: 16px;
+  }
+
+  .welcomeSection {
+    padding: 32px 16px;
+    margin-bottom: 32px;
+    text-align: center;
+
+    .welcomeIcon {
+      font-size: 80px;
+      margin-top: 24px;
+    }
+  }
+
+  .statsSection {
+    margin-bottom: 32px;
+  }
+
+  .devicesSection {
+    margin-bottom: 32px;
+  }
+
+  .aboutSection {
+    padding: 32px 16px;
+    margin-bottom: 32px;
+    text-align: center;
+
+    .aboutImage {
+      min-height: 200px;
+      margin-top: 24px;
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .loadingContainer {
+    background: @component-background;
+  }
+
+  .welcomeSection {
+    background: linear-gradient(135deg, darken(@primary-color, 20%) 0%, darken(@primary-color, 10%) 100%);
+  }
+
+  .aboutSection {
+    background: @component-background;
+  }
+
+  .deviceCard {
+    .deviceImage {
+      background: @component-background;
+    }
+  }
+}

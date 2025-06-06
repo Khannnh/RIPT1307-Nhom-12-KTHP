@@ -1,103 +1,153 @@
 ﻿export default [
+	// Auth routes - Không cần đăng nhập
 	{
 		path: '/user',
 		layout: false,
 		routes: [
 			{
-				path: '/user/login',
-				layout: false,
-				name: 'login',
-				component: './user/Login',
+				path: '/user/auth/login',
+				name: 'Đăng nhập',
+				component: '@/pages/user/Login',
+				exact: true,
+			},
+			{
+				path: '/user/auth/register',
+				name: 'Đăng ký',
+				component: '@/pages/user/Register',
+				exact: true,
 			},
 			{
 				path: '/user',
-				redirect: '/user/login',
+				component: '@/pages/user/Login',
+				exact: true,
 			},
 		],
 	},
 
-	///////////////////////////////////
-	// DEFAULT MENU
-	{
-		path: '/dashboard',
-		name: 'Dashboard',
-		component: './TrangChu',
-		icon: 'HomeOutlined',
-	},
-	{
-		path: '/gioi-thieu',
-		name: 'About',
-		component: './TienIch/GioiThieu',
-		hideInMenu: true,
-	},
-	{
-		path: '/random-user',
-		name: 'RandomUser',
-		component: './RandomUser',
-		icon: 'ArrowsAltOutlined',
-	},
-	{
-		name: 'Quản lý thiết bị',
-		path: '/danh-muc/quan-ly-thiet-bi',
-		icon: 'AppstoreOutlined',
-		component: './DanhMuc/QuanLyThietBi',
-	},
-  {
-			path: '/user/devices',
-			name: 'Trang chủ',
-			component: '@/pages/MuonDo/home',
-			icon: 'HomeOutlined',
-    },
-	// DANH MUC HE THONG
-	// {
-	// 	name: 'DanhMuc',
-	// 	path: '/danh-muc',
-	// 	icon: 'copy',
-	// 	routes: [
-	// 		{
-	// 			name: 'ChucVu',
-	// 			path: 'chuc-vu',
-	// 			component: './DanhMuc/ChucVu',
-	// 		},
-	// 	],
-	// },
-
-	{
-		path: '/notification',
-		routes: [
-			{
-				path: './subscribe',
-				exact: true,
-				component: './ThongBao/Subscribe',
-			},
-			{
-				path: './check',
-				exact: true,
-				component: './ThongBao/Check',
-			},
-			{
-				path: './',
-				exact: true,
-				component: './ThongBao/NotifOneSignal',
-			},
-		],
-		layout: false,
-		hideInMenu: true,
-	},
+	// Main menu routes - Cần đăng nhập
 	{
 		path: '/',
-	},
-	{
-		path: '/403',
-		component: './exception/403/403Page',
-		layout: false,
-	},
-	{
-		path: '/hold-on',
-		component: './exception/DangCapNhat',
-		layout: false,
-	},
-	{
-		component: './exception/404',
+		component: '@/layouts/BasicLayout',
+		routes: [
+			// Trang chủ
+			{
+				path: '/dashboard',
+				name: 'Trang chủ',
+				icon: 'HomeOutlined',
+				component: '@/pages/Home',
+				exact: true,
+			},
+
+			// Quản lý thiết bị
+			{
+				name: 'Quản lý thiết bị',
+				icon: 'AppstoreOutlined',
+				path: '/devices',
+				routes: [
+					{
+						path: '/devices',
+						name: 'Danh sách thiết bị',
+						component: '@/pages/Devices',
+						exact: true,
+					},
+					{
+						path: '/devices/borrow',
+						name: 'Mượn thiết bị',
+						component: '@/pages/MuonDo/home',
+						exact: true,
+					},
+					{
+						path: '/devices/history',
+						name: 'Lịch sử mượn trả',
+						component: '@/pages/History',
+						exact: true,
+					},
+				],
+			},
+
+			// Thống kê
+			{
+				path: '/statistics',
+				name: 'Thống kê',
+				icon: 'BarChartOutlined',
+				component: '@/pages/Statistics',
+				exact: true,
+			},
+
+			// Thông tin cá nhân
+			{
+				path: '/profile',
+				name: 'Thông tin cá nhân',
+				icon: 'UserOutlined',
+				component: '@/pages/Profile',
+				exact: true,
+			},
+
+			// Giới thiệu
+			{
+				path: '/about',
+				name: 'Giới thiệu',
+				icon: 'InfoCircleOutlined',
+				component: '@/pages/About',
+				hideInMenu: true,
+				exact: true,
+			},
+
+			// Notification routes
+			{
+				path: '/notification',
+				routes: [
+					{
+						path: '/notification/subscribe',
+						component: '@/pages/ThongBao/Subscribe',
+						exact: true,
+					},
+					{
+						path: '/notification/check',
+						component: '@/pages/ThongBao/Check',
+						exact: true,
+					},
+					{
+						path: '/notification',
+						component: '@/pages/ThongBao/NotifOneSignal',
+						exact: true,
+					},
+				],
+				layout: false,
+				hideInMenu: true,
+			},
+
+			// Error pages
+			{
+				path: '/403',
+				component: '@/pages/exception/403',
+				layout: false,
+				exact: true,
+			},
+			{
+				path: '/404',
+				component: '@/pages/exception/404',
+				layout: false,
+				exact: true,
+			},
+			{
+				path: '/hold-on',
+				component: '@/pages/exception/DangCapNhat',
+				layout: false,
+				exact: true,
+			},
+
+			// Root path
+			{
+				path: '/',
+				component: '@/pages/Home',
+				exact: true,
+			},
+
+			// 404 fallback
+			{
+				component: '@/pages/exception/404',
+			},
+		],
 	},
 ];
