@@ -32,11 +32,32 @@
 	},
 	{
 		path: '/random-user',
-		name: 'RandomUser',
+		name: 'Thống kê lendhub', 
 		component: './RandomUser',
 		icon: 'ArrowsAltOutlined',
 	},
-
+	{
+		path: '/ThongKe',
+		name: 'Thống kê_Quản trị viên',
+		component: './ThongKe',
+		icon: 'BarChartOutlined',
+	},
+		{
+		path: '/yeucaumuon',
+		name: 'Gửi yêu cầu mượn',
+		//component: './ThongKe',
+		icon: 'FileSearchOutlined',
+	},
+	{
+		path: '/thong-tin-ca-nhan',
+		name: 'Thông tin cá nhân',
+		icon: 'UserOutlined',
+	},
+		{
+		path: '/thong-tin-ca-nhan',
+		name: 'Thông tin cá nhân',
+		icon: 'UserOutlined',
+	},
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
