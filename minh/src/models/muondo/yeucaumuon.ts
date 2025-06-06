@@ -4,7 +4,10 @@ import useInitModel from '@/hooks/useInitModel';
 import { message } from 'antd';
 
 export default () => {
-  const objInit = useInitModel<MuonDo.IYeuCauMuon>('muon-do');
+  const objInit = useInitModel<MuonDo.IYeuCauMuon>({
+    getAllService: getDanhSachYeuCau,
+    getByIdService: getChiTietYeuCau,
+  });
 
   const duyetYeuCauModel = async (id: string, data: { trangThai: string; lyDoTuChoi?: string }) => {
     try {
@@ -13,7 +16,7 @@ export default () => {
       objInit.getData();
     } catch (error) {
       message.error('Có lỗi xảy ra khi duyệt yêu cầu');
-      objInit.getTableData();
+    }
   };
 
   const ghiNhanMuonModel = async (id: string, data: { ghiChu?: string }) => {
