@@ -1,5 +1,5 @@
 import './Hero.less';
-import muonDoImage from '../assets/muon do.jpg';
+import muonDoImage from '@/assets/devices.jpg';
 
 // import { useHero } from './useHero';
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import Navbar from '@/common/Navbar_tem';
-import Hero from '@/common/Hero_tem';
-import Footer from '@/common/Footer_tem';
+import Navbar from '@/components/common/Navbar_tem';
+import Hero from '@/components/common/Hero_tem';
+import Footer from '@/components/common/Footer_tem';
 
 const HomePage: React.FC = () => {
   return (

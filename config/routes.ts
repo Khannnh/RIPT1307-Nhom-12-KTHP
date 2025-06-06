@@ -42,6 +42,12 @@
 		icon: 'AppstoreOutlined',
 		component: './DanhMuc/QuanLyThietBi',
 	},
+  {
+			path: '/user/devices',
+			name: 'Trang chủ',
+			component: '@/pages/MuonDo/home',
+			icon: 'HomeOutlined',
+    },
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
