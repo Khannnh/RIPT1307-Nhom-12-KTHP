@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Modal, Form, Input, Table, InputNumber } from 'antd';
+import React, { useState } from 'react';
+import { Modal, Form, Input, Table, InputNumber, Space } from 'antd';
 
 interface GhiNhanMuonTraFormProps {
   visible: boolean;
@@ -18,38 +18,35 @@ const GhiNhanMuonTraForm: React.FC<GhiNhanMuonTraFormProps> = ({
   loai,
 }) => {
   const [form] = Form.useForm();
-  const [danhSachTra, setDanhSachTra] = React.useState<Array<{ idThietBi: string; tenThietBi: string; soLuongMuon: number; soLuongTra: number }>>([]);
-
-  React.useEffect(() => {
-    if (loai === 'TRA' && record.danhSachThietBi) {
-      setDanhSachTra(
-        record.danhSachThietBi.map(item => ({
-          idThietBi: item.idThietBi,
-          tenThietBi: item.tenThietBi,
-          soLuongMuon: item.soLuongMuon,
-          soLuongTra: item.soLuongMuon,
-        }))
-      );
-    }
-  }, [loai, record]);
+  const [loading, setLoading] = useState(false);
+  const [danhSachTra, setDanhSachTra] = useState<Array<{ idThietBi: string; soLuong: number }>>([]);
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      setLoading(true);
+      
       if (loai === 'TRA') {
-        values.danhSachTra = danhSachTra.map(item => ({
-          idThietBi: item.idThietBi,
-          soLuong: item.soLuongTra,
-        }));
+        values.danhSachTra = danhSachTra;
       }
+      
       await onSubmit(values);
       form.resetFields();
+      setDanhSachTra([]);
     } catch (error) {
       console.error('Validation failed:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const columnsTraDo = [
+  const handleCancel = () => {
+    form.resetFields();
+    setDanhSachTra([]);
+    onCancel();
+  };
+
+  const columns = [
     {
       title: 'Tên thiết bị',
       dataIndex: 'tenThietBi',
@@ -61,19 +58,33 @@ const GhiNhanMuonTraForm: React.FC<GhiNhanMuonTraFormProps> = ({
       key: 'soLuongMuon',
       align: 'center' as const,
     },
+  ];
+
+  const columnsWithReturn = [
+    ...columns,
     {
       title: 'Số lượng trả',
       key: 'soLuongTra',
       align: 'center' as const,
-      render: (text: any, record: any, index: number) => (
+      render: (text: any, recordItem: MuonDo.IChiTietYeuCau) => (
         <InputNumber
           min={0}
-          max={record.soLuongMuon}
-          value={record.soLuongTra}
+          max={recordItem.soLuongMuon}
+          defaultValue={recordItem.soLuongMuon}
           onChange={(value) => {
-            const newDanhSach = [...danhSachTra];
-            newDanhSach[index].soLuongTra = value || 0;
-            setDanhSachTra(newDanhSach);
+            const newDanhSachTra = [...danhSachTra];
+            const index = newDanhSachTra.findIndex(item => item.idThietBi === recordItem.idThietBi);
+            
+            if (index >= 0) {
+              newDanhSachTra[index].soLuong = value || 0;
+            } else {
+              newDanhSachTra.push({
+                idThietBi: recordItem.idThietBi,
+                soLuong: value || 0,
+              });
+            }
+            
+            setDanhSachTra(newDanhSachTra);
           }}
         />
       ),
@@ -82,30 +93,39 @@ const GhiNhanMuonTraForm: React.FC<GhiNhanMuonTraFormProps> = ({
 
   return (
     <Modal
-      title={loai === 'MUON' ? 'Ghi nhận mượn đồ' : 'Ghi nhận trả đồ'}
+      title={loai === 'MUON' ? 'Ghi nhận mượn thiết bị' : 'Ghi nhận trả thiết bị'}
       open={visible}
-      onCancel={onCancel}
       onOk={handleSubmit}
+      onCancel={handleCancel}
+      confirmLoading={loading}
       okText="Xác nhận"
       cancelText="Hủy"
-      width={loai === 'TRA' ? 800 : 600}
+      width={800}
     >
       <Form form={form} layout="vertical">
-        {loai === 'TRA' && (
-          <div style={{ marginBottom: 16 }}>
-            <h4>Danh sách thiết bị trả:</h4>
-            <Table
-              columns={columnsTraDo}
-              dataSource={danhSachTra}
-              pagination={false}
-              size="small"
-              rowKey="idThietBi"
-            />
-          </div>
-        )}
+        <div style={{ marginBottom: 16 }}>
+          <strong>Thông tin sinh viên:</strong>
+          <div>Tên: {record.tenSinhVien} ({record.maSinhVien})</div>
+          <div>Email: {record.email}</div>
+          <div>Lớp: {record.lop}</div>
+        </div>
 
-        <Form.Item name="ghiChu" label="Ghi chú">
-          <Input.TextArea rows={4} placeholder="Nhập ghi chú..." />
+        <div style={{ marginBottom: 16 }}>
+          <strong>Danh sách thiết bị:</strong>
+          <Table
+            columns={loai === 'TRA' ? columnsWithReturn : columns}
+            dataSource={record.danhSachThietBi}
+            pagination={false}
+            size="small"
+            rowKey="idThietBi"
+          />
+        </div>
+
+        <Form.Item label="Ghi chú" name="ghiChu">
+          <Input.TextArea
+            rows={3}
+            placeholder="Nhập ghi chú (không bắt buộc)..."
+          />
         </Form.Item>
       </Form>
     </Modal>

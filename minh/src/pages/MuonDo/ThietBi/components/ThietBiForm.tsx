@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Select, InputNumber, Row, Col } from 'antd';
 import { ETrangThaiThietBi, ELoaiThietBi } from '@/services/MuonDo/constant';
 
@@ -17,25 +17,32 @@ const ThietBiForm: React.FC<ThietBiFormProps> = ({
   record,
 }) => {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (visible) {
-      if (record) {
-        form.setFieldsValue(record);
-      } else {
-        form.resetFields();
-      }
+    if (visible && record) {
+      form.setFieldsValue(record);
+    } else if (visible) {
+      form.resetFields();
     }
   }, [visible, record, form]);
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      setLoading(true);
       await onSubmit(values);
       form.resetFields();
     } catch (error) {
       console.error('Validation failed:', error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    onCancel();
   };
 
   const loaiThietBiOptions = [
@@ -55,9 +62,10 @@ const ThietBiForm: React.FC<ThietBiFormProps> = ({
     <Modal
       title={record ? 'Sửa thiết bị' : 'Thêm thiết bị mới'}
       open={visible}
-      onCancel={onCancel}
       onOk={handleSubmit}
-      okText={record ? 'Cập nhật' : 'Thêm mới'}
+      onCancel={handleCancel}
+      confirmLoading={loading}
+      okText={record ? 'Cập nhật' : 'Thêm'}
       cancelText="Hủy"
       width={800}
     >
@@ -66,26 +74,26 @@ const ThietBiForm: React.FC<ThietBiFormProps> = ({
         layout="vertical"
         initialValues={{
           trangThai: ETrangThaiThietBi.HOAT_DONG,
-          loaiThietBi: ELoaiThietBi.KHAC,
-          soLuongTonKho: 0,
+          loaiThietBi: ELoaiThietBi.DIEN_TU,
+          soLuongTonKho: 1,
           soLuongDangMuon: 0,
         }}
       >
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="maThietBi"
               label="Mã thiết bị"
-              rules={[{ required: true, message: 'Vui lòng nhập mã thiết bị' }]}
+              name="maThietBi"
+              rules={[{ required: true, message: 'Vui lòng nhập mã thiết bị!' }]}
             >
               <Input placeholder="Nhập mã thiết bị" />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item
-              name="tenThietBi"
               label="Tên thiết bị"
-              rules={[{ required: true, message: 'Vui lòng nhập tên thiết bị' }]}
+              name="tenThietBi"
+              rules={[{ required: true, message: 'Vui lòng nhập tên thiết bị!' }]}
             >
               <Input placeholder="Nhập tên thiết bị" />
             </Form.Item>
@@ -95,18 +103,18 @@ const ThietBiForm: React.FC<ThietBiFormProps> = ({
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="loaiThietBi"
               label="Loại thiết bị"
-              rules={[{ required: true, message: 'Vui lòng chọn loại thiết bị' }]}
+              name="loaiThietBi"
+              rules={[{ required: true, message: 'Vui lòng chọn loại thiết bị!' }]}
             >
               <Select placeholder="Chọn loại thiết bị" options={loaiThietBiOptions} />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item
-              name="trangThai"
               label="Trạng thái"
-              rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+              name="trangThai"
+              rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
             >
               <Select placeholder="Chọn trạng thái" options={trangThaiOptions} />
             </Form.Item>
@@ -115,12 +123,12 @@ const ThietBiForm: React.FC<ThietBiFormProps> = ({
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="hangSanXuat" label="Hãng sản xuất">
+            <Form.Item label="Hãng sản xuất" name="hangSanXuat">
               <Input placeholder="Nhập hãng sản xuất" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="model" label="Model">
+            <Form.Item label="Model" name="model">
               <Input placeholder="Nhập model" />
             </Form.Item>
           </Col>
@@ -129,36 +137,30 @@ const ThietBiForm: React.FC<ThietBiFormProps> = ({
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item
-              name="soLuongTonKho"
               label="Số lượng tồn kho"
-              rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
+              name="soLuongTonKho"
+              rules={[{ required: true, message: 'Vui lòng nhập số lượng!' }]}
             >
-              <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+              <InputNumber min={0} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="donGia" label="Đơn giá">
-              <InputNumber
-                min={0}
-                style={{ width: '100%' }}
-                placeholder="0"
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
-              />
+            <Form.Item label="Đơn giá" name="donGia">
+              <InputNumber min={0} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="viTri" label="Vị trí">
+            <Form.Item label="Vị trí" name="viTri">
               <Input placeholder="Nhập vị trí" />
             </Form.Item>
           </Col>
         </Row>
 
-        <Form.Item name="moTa" label="Mô tả">
+        <Form.Item label="Mô tả" name="moTa">
           <Input.TextArea rows={3} placeholder="Nhập mô tả thiết bị" />
         </Form.Item>
 
-        <Form.Item name="ghiChu" label="Ghi chú">
+        <Form.Item label="Ghi chú" name="ghiChu">
           <Input.TextArea rows={2} placeholder="Nhập ghi chú" />
         </Form.Item>
       </Form>
