@@ -67,20 +67,3 @@ declare module MuonDo {
     ghiChu?: string;
   }
 }
-
-  export interface ILichSuMuonTra {
-    _id: string;
-    createdAt?: string;
-    idYeuCau: string;
-    idThietBi: string;
-    maSinhVien: string;
-    tenSinhVien: string;
-    tenThietBi: string;
-    soLuong: number;
-    thoiGianMuon: string;
-    thoiGianTra?: string;
-    trangThai: 'DANG_MUON' | 'DA_TRA';
-    nguoiGhiNhan: string;
-    ghiChu?: string;
-  }
-}

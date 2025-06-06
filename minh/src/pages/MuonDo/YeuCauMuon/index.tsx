@@ -36,7 +36,7 @@ const YeuCauMuon: React.FC = () => {
       case ETrangThaiYeuCau.TU_CHOI: return 'Từ chối';
       case ETrangThaiYeuCau.DA_MUON: return 'Đã mượn';
       case ETrangThaiYeuCau.DA_TRA: return 'Đã trả';
-      default: return trangThai;
+      default: return 'Không xác định';
     }
   };
 
@@ -84,7 +84,7 @@ const YeuCauMuon: React.FC = () => {
     {
       title: 'Thao tác',
       align: 'center',
-      width: 150,
+      width: 200,
       fixed: 'right',
       render: (record: MuonDo.IYeuCauMuon) => (
         <Space>
@@ -113,6 +113,7 @@ const YeuCauMuon: React.FC = () => {
           {record.trangThai === ETrangThaiYeuCau.DA_DUYET && (
             <Button
               type="link"
+              style={{ color: '#52c41a' }}
               onClick={() => {
                 setSelectedRecord(record);
                 setLoaiGhiNhan('MUON');
@@ -125,6 +126,7 @@ const YeuCauMuon: React.FC = () => {
           {record.trangThai === ETrangThaiYeuCau.DA_MUON && (
             <Button
               type="link"
+              style={{ color: '#1890ff' }}
               onClick={() => {
                 setSelectedRecord(record);
                 setLoaiGhiNhan('TRA');
@@ -154,53 +156,51 @@ const YeuCauMuon: React.FC = () => {
   ];
 
   return (
-    <>
+    <div>
       <TableBase
-        title="Quản lý yêu cầu mượn đồ"
         columns={columns}
         dataSource={danhSach}
         loading={loading}
         pagination={{
           current: page,
           pageSize: limit,
-          total,
+          total: total,
+          onChange: (page, size) => getData({ page, limit: size }),
         }}
-        onChange={(pagination) => {
-          getData({ page: pagination.current, limit: pagination.pageSize });
-        }}
-        buttons={{ create: false, import: false, export: true }}
+        scroll={{ x: 800 }}
+        rowKey="_id"
       />
 
-      {/* Chi tiết yêu cầu */}
+      {/* Drawer xem chi tiết */}
       <Drawer
         title="Chi tiết yêu cầu mượn"
-        width={800}
         open={visibleDetail}
         onClose={() => setVisibleDetail(false)}
+        width={600}
       >
         {selectedRecord && (
           <Space direction="vertical" style={{ width: '100%' }}>
-            <Descriptions bordered column={2}>
+            <Descriptions bordered column={1}>
               <Descriptions.Item label="Mã sinh viên">{selectedRecord.maSinhVien}</Descriptions.Item>
               <Descriptions.Item label="Tên sinh viên">{selectedRecord.tenSinhVien}</Descriptions.Item>
               <Descriptions.Item label="Email">{selectedRecord.email}</Descriptions.Item>
               <Descriptions.Item label="Số điện thoại">{selectedRecord.soDienThoai}</Descriptions.Item>
               <Descriptions.Item label="Lớp">{selectedRecord.lop}</Descriptions.Item>
               <Descriptions.Item label="Khoa">{selectedRecord.khoa}</Descriptions.Item>
-              <Descriptions.Item label="Trạng thái" span={2}>
-                <Tag color={getTrangThaiColor(selectedRecord.trangThai)}>
-                  {getTrangThaiText(selectedRecord.trangThai)}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Lý do mượn" span={2}>{selectedRecord.lyDoMuon}</Descriptions.Item>
+              <Descriptions.Item label="Lý do mượn">{selectedRecord.lyDoMuon}</Descriptions.Item>
               <Descriptions.Item label="Thời gian mượn dự kiến">
                 {moment(selectedRecord.thoiGianMuonDuKien).format('DD/MM/YYYY HH:mm')}
               </Descriptions.Item>
               <Descriptions.Item label="Thời gian trả dự kiến">
                 {moment(selectedRecord.thoiGianTraDuKien).format('DD/MM/YYYY HH:mm')}
               </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">
+                <Tag color={getTrangThaiColor(selectedRecord.trangThai)}>
+                  {getTrangThaiText(selectedRecord.trangThai)}
+                </Tag>
+              </Descriptions.Item>
               {selectedRecord.lyDoTuChoi && (
-                <Descriptions.Item label="Lý do từ chối" span={2}>{selectedRecord.lyDoTuChoi}</Descriptions.Item>
+                <Descriptions.Item label="Lý do từ chối">{selectedRecord.lyDoTuChoi}</Descriptions.Item>
               )}
             </Descriptions>
 
@@ -248,7 +248,7 @@ const YeuCauMuon: React.FC = () => {
           loai={loaiGhiNhan}
         />
       )}
-    </>
+    </div>
   );
 };
 

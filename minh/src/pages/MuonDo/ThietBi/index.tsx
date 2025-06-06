@@ -1,31 +1,21 @@
 
 import React, { useState } from 'react';
-import { Button, Tag, Space, Modal, InputNumber, message } from 'antd';
+import { Button, Tag, Space, Drawer, Descriptions, Modal, InputNumber } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import TableBase from '@/components/Table';
 import { useModel } from 'umi';
+import moment from 'moment';
 import { ETrangThaiThietBi, ELoaiThietBi } from '@/services/MuonDo/constant';
 import type { IColumn } from '@/components/Table/typing';
 import ThietBiForm from './components/ThietBiForm';
 
 const ThietBi: React.FC = () => {
-  const { 
-    danhSach, 
-    loading, 
-    page, 
-    limit, 
-    total, 
-    getData, 
-    createModel, 
-    updateModel, 
-    deleteModel,
-    capNhatSoLuongModel 
-  } = useModel('muondo.thietbi');
-
+  const { danhSach, loading, page, limit, total, getData, tao, capNhat, xoa, capNhatSoLuongModel } = useModel('muondo.thietbi');
+  const [visibleDetail, setVisibleDetail] = useState(false);
   const [visibleForm, setVisibleForm] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<MuonDo.IThietBi | null>(null);
-  const [visibleSoLuong, setVisibleSoLuong] = useState(false);
-  const [soLuongMoi, setSoLuongMoi] = useState(0);
+  const [selectedRecord, setSelectedRecord] = useState<MuonDo.IThietBi | null>(null);
+  const [visibleCapNhatSoLuong, setVisibleCapNhatSoLuong] = useState(false);
+  const [soLuongMoi, setSoLuongMoi] = useState<number>(0);
 
   const getTrangThaiColor = (trangThai: ETrangThaiThietBi) => {
     switch (trangThai) {
@@ -41,7 +31,7 @@ const ThietBi: React.FC = () => {
       case ETrangThaiThietBi.HOAT_DONG: return 'Hoạt động';
       case ETrangThaiThietBi.BAO_TRI: return 'Bảo trì';
       case ETrangThaiThietBi.HONG: return 'Hỏng';
-      default: return trangThai;
+      default: return 'Không xác định';
     }
   };
 
@@ -51,7 +41,22 @@ const ThietBi: React.FC = () => {
       case ELoaiThietBi.VAN_PHONG_PHAM: return 'Văn phòng phẩm';
       case ELoaiThietBi.THE_THAO: return 'Thể thao';
       case ELoaiThietBi.KHAC: return 'Khác';
-      default: return loai;
+      default: return 'Không xác định';
+    }
+  };
+
+  const handleDelete = (record: MuonDo.IThietBi) => {
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: `Bạn có chắc chắn muốn xóa thiết bị "${record.tenThietBi}"?`,
+      onOk: () => xoa(record._id),
+    });
+  };
+
+  const handleCapNhatSoLuong = () => {
+    if (selectedRecord) {
+      capNhatSoLuongModel(selectedRecord._id, soLuongMoi);
+      setVisibleCapNhatSoLuong(false);
     }
   };
 
@@ -71,30 +76,19 @@ const ThietBi: React.FC = () => {
     {
       title: 'Loại thiết bị',
       dataIndex: 'loaiThietBi',
-      width: 130,
+      width: 120,
       render: (value: ELoaiThietBi) => getLoaiThietBiText(value),
     },
     {
-      title: 'Hãng SX',
-      dataIndex: 'hangSanXuat',
-      width: 120,
-      filterType: 'string',
-    },
-    {
-      title: 'Tồn kho',
+      title: 'Số lượng tồn kho',
       dataIndex: 'soLuongTonKho',
-      width: 80,
+      width: 120,
       align: 'center',
-      render: (value: number, record: MuonDo.IThietBi) => (
-        <span style={{ color: value <= 5 ? 'red' : 'inherit' }}>
-          {value}
-        </span>
-      ),
     },
     {
-      title: 'Đang mượn',
+      title: 'Số lượng đang mượn',
       dataIndex: 'soLuongDangMuon',
-      width: 80,
+      width: 130,
       align: 'center',
     },
     {
@@ -107,12 +101,6 @@ const ThietBi: React.FC = () => {
       ),
     },
     {
-      title: 'Vị trí',
-      dataIndex: 'viTri',
-      width: 120,
-      filterType: 'string',
-    },
-    {
       title: 'Thao tác',
       align: 'center',
       width: 200,
@@ -122,16 +110,18 @@ const ThietBi: React.FC = () => {
           <Button
             type="link"
             icon={<EyeOutlined />}
-            size="small"
+            onClick={() => {
+              setSelectedRecord(record);
+              setVisibleDetail(true);
+            }}
           >
             Xem
           </Button>
           <Button
             type="link"
             icon={<EditOutlined />}
-            size="small"
             onClick={() => {
-              setEditingRecord(record);
+              setSelectedRecord(record);
               setVisibleForm(true);
             }}
           >
@@ -139,11 +129,11 @@ const ThietBi: React.FC = () => {
           </Button>
           <Button
             type="link"
-            size="small"
+            style={{ color: '#52c41a' }}
             onClick={() => {
-              setEditingRecord(record);
+              setSelectedRecord(record);
               setSoLuongMoi(record.soLuongTonKho);
-              setVisibleSoLuong(true);
+              setVisibleCapNhatSoLuong(true);
             }}
           >
             Cập nhật SL
@@ -152,14 +142,7 @@ const ThietBi: React.FC = () => {
             type="link"
             danger
             icon={<DeleteOutlined />}
-            size="small"
-            onClick={() => {
-              Modal.confirm({
-                title: 'Xác nhận xóa',
-                content: `Bạn có chắc chắn muốn xóa thiết bị "${record.tenThietBi}"?`,
-                onOk: () => deleteModel(record._id),
-              });
-            }}
+            onClick={() => handleDelete(record)}
           >
             Xóa
           </Button>
@@ -168,85 +151,108 @@ const ThietBi: React.FC = () => {
     },
   ];
 
-  const handleCapNhatSoLuong = async () => {
-    if (editingRecord) {
-      await capNhatSoLuongModel(editingRecord._id, soLuongMoi);
-      setVisibleSoLuong(false);
-      setEditingRecord(null);
-    }
-  };
-
   return (
-    <>
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setSelectedRecord(null);
+            setVisibleForm(true);
+          }}
+        >
+          Thêm thiết bị
+        </Button>
+      </div>
+
       <TableBase
-        title="Quản lý thiết bị"
         columns={columns}
         dataSource={danhSach}
         loading={loading}
         pagination={{
           current: page,
           pageSize: limit,
-          total,
+          total: total,
+          onChange: (page, size) => getData({ page, limit: size }),
         }}
-        onChange={(pagination) => {
-          getData({ page: pagination.current, limit: pagination.pageSize });
-        }}
-        buttons={{
-          create: true,
-          import: true,
-          export: true,
-        }}
-        onCreateClick={() => {
-          setEditingRecord(null);
-          setVisibleForm(true);
-        }}
+        scroll={{ x: 1000 }}
+        rowKey="_id"
       />
+
+      {/* Drawer xem chi tiết */}
+      <Drawer
+        title="Chi tiết thiết bị"
+        open={visibleDetail}
+        onClose={() => setVisibleDetail(false)}
+        width={600}
+      >
+        {selectedRecord && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Mã thiết bị">{selectedRecord.maThietBi}</Descriptions.Item>
+            <Descriptions.Item label="Tên thiết bị">{selectedRecord.tenThietBi}</Descriptions.Item>
+            <Descriptions.Item label="Loại thiết bị">{getLoaiThietBiText(selectedRecord.loaiThietBi)}</Descriptions.Item>
+            <Descriptions.Item label="Hãng sản xuất">{selectedRecord.hangSanXuat}</Descriptions.Item>
+            <Descriptions.Item label="Model">{selectedRecord.model}</Descriptions.Item>
+            <Descriptions.Item label="Số lượng tồn kho">{selectedRecord.soLuongTonKho}</Descriptions.Item>
+            <Descriptions.Item label="Số lượng đang mượn">{selectedRecord.soLuongDangMuon}</Descriptions.Item>
+            <Descriptions.Item label="Đơn giá">{selectedRecord.donGia?.toLocaleString()} VNĐ</Descriptions.Item>
+            <Descriptions.Item label="Trạng thái">
+              <Tag color={getTrangThaiColor(selectedRecord.trangThai)}>
+                {getTrangThaiText(selectedRecord.trangThai)}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Vị trí">{selectedRecord.viTri}</Descriptions.Item>
+            <Descriptions.Item label="Mô tả">{selectedRecord.moTa}</Descriptions.Item>
+            <Descriptions.Item label="Ghi chú">{selectedRecord.ghiChu}</Descriptions.Item>
+            <Descriptions.Item label="Ngày tạo">
+              {moment(selectedRecord.createdAt).format('DD/MM/YYYY HH:mm')}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </Drawer>
 
       {/* Form thêm/sửa thiết bị */}
       <ThietBiForm
         visible={visibleForm}
-        onCancel={() => {
-          setVisibleForm(false);
-          setEditingRecord(null);
-        }}
+        onCancel={() => setVisibleForm(false)}
         onSubmit={async (values) => {
-          if (editingRecord) {
-            await updateModel(editingRecord._id, values);
+          if (selectedRecord) {
+            await capNhat(selectedRecord._id, values);
           } else {
-            await createModel(values);
+            await tao(values);
           }
           setVisibleForm(false);
-          setEditingRecord(null);
         }}
-        record={editingRecord}
+        record={selectedRecord}
       />
 
       {/* Modal cập nhật số lượng */}
       <Modal
         title="Cập nhật số lượng tồn kho"
-        open={visibleSoLuong}
+        open={visibleCapNhatSoLuong}
         onOk={handleCapNhatSoLuong}
-        onCancel={() => setVisibleSoLuong(false)}
+        onCancel={() => setVisibleCapNhatSoLuong(false)}
         okText="Cập nhật"
         cancelText="Hủy"
       >
         <div style={{ marginBottom: 16 }}>
-          <strong>Thiết bị:</strong> {editingRecord?.tenThietBi}
+          <strong>Thiết bị:</strong> {selectedRecord?.tenThietBi}
         </div>
         <div style={{ marginBottom: 16 }}>
-          <strong>Số lượng hiện tại:</strong> {editingRecord?.soLuongTonKho}
+          <strong>Số lượng hiện tại:</strong> {selectedRecord?.soLuongTonKho}
         </div>
         <div>
           <strong>Số lượng mới:</strong>
           <InputNumber
+            min={0}
             value={soLuongMoi}
             onChange={(value) => setSoLuongMoi(value || 0)}
-            min={0}
-            style={{ marginLeft: 8, width: 120 }}
+            style={{ width: '100%', marginTop: 8 }}
           />
         </div>
       </Modal>
-    </>
+    </div>
   );
 };
 

@@ -45,7 +45,7 @@ export async function xoaThietBi(id: string) {
 }
 
 export async function capNhatSoLuongThietBi(id: string, data: { soLuongTonKho: number }) {
-  return axios.put(`${ip3}/thiet-bi/${id}/so-luong`, data);
+  return axios.put(`${ip3}/thiet-bi/${id}/so-luong`, data);, data);
 }
 
 // API Lịch sử
@@ -55,5 +55,5 @@ export async function getLichSuMuonTra(params?: any) {
 
 // API Thống kê
 export async function getThongKe(params?: any) {
-  return axios.get(`${ip3}/thong-ke`, { params });
+  return axios.get(`${ip3}/thong-ke`, { params });`, { params });
 }
