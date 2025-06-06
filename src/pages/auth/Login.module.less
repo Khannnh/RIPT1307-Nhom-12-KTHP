@@ -1,0 +1,57 @@
+@import '~antd/es/style/themes/default.less';
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0f2f5;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+
+  :global {
+    .ant-card-body {
+      padding: 32px;
+    }
+  }
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 32px !important;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 16px;
+  color: @text-color-secondary;
+
+  a {
+    color: @primary-color;
+    font-weight: 500;
+
+    &:hover {
+      color: @primary-5;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 16px;
+  }
+
+  .card {
+    :global {
+      .ant-card-body {
+        padding: 24px;
+      }
+    }
+  }
+}

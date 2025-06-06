@@ -1,0 +1,89 @@
+@import '~antd/es/style/themes/default.less';
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero {
+  background: linear-gradient(135deg, @primary-color 0%, lighten(@primary-color, 20%) 100%);
+  padding: 80px 24px;
+  text-align: center;
+  color: white;
+
+  .heroContent {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .heroTitle {
+    color: white !important;
+    font-size: 48px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .heroDescription {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 20px;
+    margin-bottom: 32px;
+  }
+}
+
+.features {
+  padding: 80px 24px;
+  background: white;
+
+  .sectionTitle {
+    text-align: center;
+    margin-bottom: 48px !important;
+  }
+
+  .featureCard {
+    height: 100%;
+    text-align: center;
+    transition: all 0.3s;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .featureIcon {
+      font-size: 48px;
+      color: @primary-color;
+      margin-bottom: 24px;
+    }
+
+    h4 {
+      margin-bottom: 16px !important;
+    }
+  }
+}
+
+.footer {
+  margin-top: auto;
+  padding: 24px;
+  text-align: center;
+  background: #f0f2f5;
+  border-top: 1px solid #e8e8e8;
+}
+
+// Responsive styles
+@media (max-width: @screen-sm) {
+  .hero {
+    padding: 40px 16px;
+
+    .heroTitle {
+      font-size: 32px !important;
+    }
+
+    .heroDescription {
+      font-size: 16px;
+    }
+  }
+
+  .features {
+    padding: 40px 16px;
+  }
+}

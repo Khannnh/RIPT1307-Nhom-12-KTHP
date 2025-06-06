@@ -1,0 +1,58 @@
+@import '~antd/es/style/themes/default.less';
+
+.container {
+  padding: 24px;
+  background: #fff;
+  min-height: 100vh;
+
+  :global {
+    .ant-descriptions {
+      margin-bottom: 24px;
+    }
+
+    .ant-descriptions-item-label {
+      font-weight: 500;
+    }
+
+    .ant-timeline {
+      margin-top: 16px;
+    }
+  }
+}
+
+.backButton {
+  margin-bottom: 16px;
+}
+
+.actions {
+  margin: 24px 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.timeline {
+  margin-top: 32px;
+  padding: 24px;
+  background: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 16px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 8px;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .timeline {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,39 @@
+@import '~antd/es/style/themes/default.less';
+
+.container {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.statsRow {
+  margin-bottom: 24px;
+}
+
+.recentRequests {
+  :global {
+    .ant-table-thead > tr > th {
+      background: #fafafa;
+      font-weight: 600;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: #f5f5f5;
+    }
+
+    .ant-tag {
+      margin-right: 0;
+    }
+  }
+}
+
+// Responsive styles
+@media (max-width: 576px) {
+  .container {
+    padding: 16px;
+  }
+
+  .statsRow {
+    margin-bottom: 16px;
+  }
+}
