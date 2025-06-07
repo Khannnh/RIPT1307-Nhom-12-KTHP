@@ -32,7 +32,7 @@
 	},
 	{
 		path: '/random-user',
-		name: 'Thống kê lendhub', 
+		name: 'Random User', 
 		component: './RandomUser',
 		icon: 'ArrowsAltOutlined',
 	},
@@ -41,8 +41,29 @@
 		name: 'Thống kê_Quản trị viên',
 		component: './ThongKe',
 		icon: 'BarChartOutlined',
+		//layout: true,
 	},
-		{
+  {
+    path: '/thongke-group', // Đây là route cha (không có component)
+    name: 'Thống Kê LendHub', // Tên nhóm trong menu
+    icon: 'BarChartOutlined', // Icon cho nhóm
+    layout: true, // Layout cho cả nhóm
+    routes: [
+      {
+        path: '/thongke-group/admin', // Đường dẫn cho "Thống kê_Quản trị viên"
+        name: 'Thống kê Quản trị viên',
+        component: '@/pages/ThongKe/index', // Trỏ tới src/pages/ThongKe/index.tsx
+        // icon: 'BarChartOutlined', // Icon riêng cho item con nếu muốn
+      },
+      {
+        path: '/thongke-group/bieudo', // Đường dẫn cho "Thống kê biểu đồ"
+        name: 'Thống kê biểu đồ',
+        component: '@/pages/ThongKe/chartPage', // Trỏ tới src/pages/ThongKe/chartPage.tsx
+        // icon: 'LineChartOutlined', // Icon riêng cho item con nếu muốn
+      },
+    ],
+  },
+	{
 		path: '/yeucaumuon',
 		name: 'Gửi yêu cầu mượn',
 		//component: './ThongKe',
@@ -53,11 +74,7 @@
 		name: 'Thông tin cá nhân',
 		icon: 'UserOutlined',
 	},
-		{
-		path: '/thong-tin-ca-nhan',
-		name: 'Thông tin cá nhân',
-		icon: 'UserOutlined',
-	},
+
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
