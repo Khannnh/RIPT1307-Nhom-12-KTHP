@@ -161,9 +161,9 @@ const ThongKe: React.FC = () => {
                 <div className="placeholder-chart" style={{ height: '300px', border: '1px dashed #ccc', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f9f9f9' }}>
                   <p>Biểu đồ cột sẽ hiển thị ở đây (chưa có dữ liệu thực tế)</p>
                   <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%', width: '100%', padding: '20px', gap: '10px' }}>
-                    {/* {data.deviceList.slice(0, 5).map((device, index) => (
+                    {data.deviceList.slice(0, 5).map((device, index) => (
                       <div
-                        key={device._id || `device-${index}`} // Sử dụng _id từ model backend
+                        key={device.id || `device-${index}`} // Sử dụng _id từ model backend
                         style={{
                           flex: '1',
                           height: `${(device.borrowedCount / data.summary.mostPopularBorrowedCount) * 100}%`,
@@ -171,7 +171,7 @@ const ThongKe: React.FC = () => {
                         }}
                         title={`${device.name}: ${device.borrowedCount} lượt mượn`}
                       ></div>
-                    ))} */}
+                    ))}
                   </div>
                 </div>
               </div>
@@ -183,7 +183,7 @@ const ThongKe: React.FC = () => {
                 <p className="chart-subtitle">Phân bổ theo phần trăm cho {data.summary.month}</p>
                 <div className="placeholder-chart" style={{ height: '300px', border: '1px dashed #ccc', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f9f9f9' }}>
                   <p>Biểu đồ tròn sẽ hiển thị ở đây (chưa có dữ liệu thực tế)</p>
-                  <img src="https://gw.alipayobjects.com/zos/antfincdn/a%26A6LpH%24R%2FA/chart-pie.svg" alt="Placeholder Pie Chart" style={{ width: '200px', height: '200px' }}/>
+                  <img src="https://gw.alipayobjects.com/zos/antfincdn/a%26A6LpH%24R%2FA/chart-pie.svg" alt="Placeholder Pie Chart" style={{ width: '200px', height: '200px' }} />
                 </div>
               </div>
             )}

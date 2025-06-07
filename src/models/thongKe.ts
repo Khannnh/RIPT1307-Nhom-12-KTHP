@@ -3,12 +3,16 @@
  * Interface cho dữ liệu thiết bị trong bảng thống kê.
  */
 export interface DeviceStatistic {
+    id: string;
   key: string;
   rank: string;
   name: string;
   category: string;
   borrowed: number;
   percentage: string;
+    borrowedCount: number; 
+    
+  
 }
 
 /**
