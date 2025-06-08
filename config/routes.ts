@@ -74,6 +74,38 @@
 		hideInMenu: true,
 	},
 	{
+  path: '/admin',
+  name: 'Quản lý cho mượn',
+  icon: 'crown',
+  access: 'canAdmin', // Chỉ tàik khoản có quyền admin mới thấy menu này
+  routes: [
+    {
+      path: '/admin/dashboard',
+      name: 'Thống kê',
+      icon: 'areaChart',
+      component: './Admin/Dashboard',
+    },
+    {
+      path: '/admin/equipments',
+      name: 'Quản lý thiết bị',
+      icon: 'database',
+      component: './Admin/Equipments',
+    },
+    {
+      path: '/admin/requests',
+      name: 'Yêu cầu mượn',
+      icon: 'solution',
+      component: './Admin/Requests',
+    },
+     {
+      path: '/admin/borrows',
+      name: 'Ghi nhận mượn-trả',
+      icon: 'sync',
+      component: './Admin/Borrows',
+    },
+  ],
+},
+	{
 		path: '/',
 	},
 	{
