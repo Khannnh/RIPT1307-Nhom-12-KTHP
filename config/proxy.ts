@@ -5,26 +5,28 @@
  * For details, please see
  * https://pro.ant.design/docs/deploy
  */
+import { ProxyOptions } from 'vite';
+
 export default {
   dev: {
-    '/v1/': {
-      target: 'http://203.162.10.108:8099',
+    '/api/': {
+      target: 'http://localhost:3000',
       changeOrigin: true,
-      pathRewrite: { '^': '' },
+      pathRewrite: { '^/api': '' },
     },
   },
   test: {
-    '/v2.2/': {
-      target: 'https://apidev.sotaydangvien.com',
+    '/api/': {
+      target: 'http://localhost:3000',
       changeOrigin: true,
-      pathRewrite: { '^': '' },
+      pathRewrite: { '^/api': '' },
     },
   },
   pre: {
-    '/v2.2/': {
-      target: 'https://apidev.sotaydangvien.com',
+    '/api/': {
+      target: 'http://localhost:3000',
       changeOrigin: true,
-      pathRewrite: { '^': '' },
+      pathRewrite: { '^/api': '' },
     },
   },
-};
+} as Record<string, Record<string, ProxyOptions>>;

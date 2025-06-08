@@ -29,7 +29,7 @@ const DeviceList: React.FC = () => {
         pageSize: params.pageSize || pagination.pageSize,
         keyword: params.keyword,
       });
-
+      
       setDevices(response.data);
       setPagination({
         current: response.current,
@@ -82,7 +82,7 @@ const DeviceList: React.FC = () => {
     try {
       setSubmitting(true);
       const [borrowDate, returnDate] = values.dateRange;
-
+      
       // Validate dates
       if (borrowDate.isAfter(returnDate)) {
         message.error('Ngày trả phải sau ngày mượn');
@@ -178,8 +178,8 @@ const DeviceList: React.FC = () => {
       key: 'action',
       render: (_: any, record: Device) => (
         <>
-          <Button
-            type="link"
+          <Button 
+            type="link" 
             onClick={() => handleViewDetail(record)}
             style={{ marginRight: 8 }}
           >
@@ -213,7 +213,7 @@ const DeviceList: React.FC = () => {
       {/* Detail Modal */}
       <Modal
         title="Chi tiết thiết bị"
-        visible={detailModalVisible}
+        open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={null}
         width={700}
@@ -253,7 +253,7 @@ const DeviceList: React.FC = () => {
       {/* Borrow Modal */}
       <Modal
         title="Gửi yêu cầu mượn thiết bị"
-        visible={borrowModalVisible}
+        open={borrowModalVisible}
         onCancel={() => {
           setBorrowModalVisible(false);
           form.resetFields();
@@ -319,10 +319,10 @@ const DeviceList: React.FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              block 
               loading={submitting}
             >
               Gửi yêu cầu
@@ -334,4 +334,4 @@ const DeviceList: React.FC = () => {
   );
 };
 
-export default DeviceList;
+export default DeviceList; 

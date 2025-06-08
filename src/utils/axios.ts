@@ -49,7 +49,7 @@ import data from './data';
 
 // Tạo instance axios với baseURL
 const instance = axios.create({
-	baseURL: 'http://localhost:3456',
+	baseURL: 'http://localhost:3000',
 	timeout: 10000,
 });
 
@@ -105,7 +105,7 @@ instance.interceptors.response.use(
 						message: 'Phiên đăng nhập đã hết hạn',
 						description: 'Vui lòng đăng nhập lại',
 					});
-					history.push('/user/login');
+					history.push('/user/auth/login');
 					break;
 
 				case 403:

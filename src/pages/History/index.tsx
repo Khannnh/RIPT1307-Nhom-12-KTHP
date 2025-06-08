@@ -1,11 +1,12 @@
 import React from 'react';
-import { Table, Tag, Space, Typography, Card } from 'antd';
+import { Table, Tag, Space, Typography, Card, Layout } from 'antd';
 import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageContainer } from '@ant-design/pro-layout';
 import styles from './index.less';
 
 const { Title } = Typography;
+const { Content } = Layout;
 
 interface HistoryItem {
   key: string;
@@ -88,24 +89,26 @@ const HistoryPage: React.FC = () => {
   ];
 
   return (
-    <PageContainer>
-      <div className={styles.container}>
-        <Card className={styles.historyCard}>
-          <Title level={2} className={styles.title}>Lịch sử mượn thiết bị</Title>
-          <Table
-            columns={columns}
-            dataSource={mockData}
-            className={styles.table}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: (total) => `Tổng số ${total} bản ghi`,
-            }}
-            scroll={{ x: 'max-content' }}
-          />
-        </Card>
-      </div>
-    </PageContainer>
+    <Content className={styles.content}>
+      <PageContainer>
+        <div className={styles.container}>
+          <Card className={styles.historyCard}>
+            <Title level={2} className={styles.title}>Lịch sử mượn thiết bị</Title>
+            <Table
+              columns={columns}
+              dataSource={mockData}
+              className={styles.table}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: (total) => `Tổng số ${total} bản ghi`,
+              }}
+              scroll={{ x: 'max-content' }}
+            />
+          </Card>
+        </div>
+      </PageContainer>
+    </Content>
   );
 };
 

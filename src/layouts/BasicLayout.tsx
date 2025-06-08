@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Dropdown, Avatar, Space, Typography, Button } from 'antd';
+import { Layout, Menu, Dropdown, Avatar, Space, Typography, Button, message } from 'antd';
 import {
   HomeOutlined,
-  HistoryOutlined,
+  AppstoreOutlined,
   BarChartOutlined,
   UserOutlined,
   LogoutOutlined,
@@ -10,23 +10,28 @@ import {
 } from '@ant-design/icons';
 import { Link, useLocation, history } from 'umi';
 import styles from './BasicLayout.less';
+import { logoutUser } from '@/services/user';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
 
-// Mock user data
-const userData = {
-  name: 'Nguyễn Văn A',
-  avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
-};
-
 const BasicLayout: React.FC = ({ children }) => {
   const location = useLocation();
-  const [currentUser, setCurrentUser] = useState(userData);
+  const [currentUser, setCurrentUser] = useState({
+    name: localStorage.getItem('userName') || 'User',
+    avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
+  });
 
-  const handleLogout = () => {
-    // Call logout API
-    history.push('/user/login');
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      localStorage.removeItem('token');
+      localStorage.removeItem('userName');
+      message.success('Đăng xuất thành công');
+      history.push('/user/auth/login');
+    } catch (error) {
+      message.error('Đăng xuất thất bại');
+    }
   };
 
   const userMenu = (
@@ -46,14 +51,14 @@ const BasicLayout: React.FC = ({ children }) => {
 
   const navItems = [
     {
-      key: '/home',
+      key: '/dashboard',
       icon: <HomeOutlined />,
-      label: <Link to="/home">Trang chủ</Link>,
+      label: <Link to="/dashboard">Trang chủ</Link>,
     },
     {
-      key: '/history',
-      icon: <HistoryOutlined />,
-      label: <Link to="/history">Lịch sử</Link>,
+      key: '/devices',
+      icon: <AppstoreOutlined />,
+      label: <Link to="/devices">Quản lý thiết bị</Link>,
     },
     {
       key: '/statistics',
@@ -66,7 +71,7 @@ const BasicLayout: React.FC = ({ children }) => {
     <Layout className={styles.layout}>
       <Header className={styles.header}>
         <div className={styles.logo}>
-          <Link to="/home">
+          <Link to="/dashboard">
             <img src="/logo.png" alt="Logo" />
             <span>Hệ thống mượn thiết bị</span>
           </Link>
@@ -118,4 +123,4 @@ const BasicLayout: React.FC = ({ children }) => {
   );
 };
 
-export default BasicLayout; 
+export default BasicLayout;

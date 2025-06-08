@@ -25,7 +25,7 @@ const Register: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
       });
       message.success('Đăng ký thành công! Vui lòng đăng nhập.');
       if (onSuccess) onSuccess();
-      history.push('/user/login');
+      history.push('/user/auth/login');
     } catch (err: any) {
       message.error(err?.response?.data?.message || 'Đăng ký thất bại!');
     }

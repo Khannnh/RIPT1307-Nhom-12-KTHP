@@ -1,10 +1,15 @@
-@import '~antd/es/style/themes/default.less';
-@border-radius-lg: 8px; // hoặc giá trị tùy bạn chọn
+@border-radius-lg: 8px;
+@import '~antd/lib/style/themes/default.less';
 
+@media (max-width: 576px) {
+  .my-class {
+    display: none;
+  }
+}
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 24px;
+  background: #f0f2f5;
+  min-height: calc(100vh - 64px);
 }
 
 .loadingContainer {
@@ -12,165 +17,127 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: @background-color-light;
+  background: #fafafa;
   border-radius: @border-radius-lg;
   margin: 24px;
 }
 
 // Welcome Section
 .welcomeSection {
-  background: linear-gradient(135deg, @primary-1 0%, @primary-2 100%);
-  border-radius: @border-radius-lg;
-  padding: 48px 24px;
+  text-align: center;
   margin-bottom: 48px;
-  color: white;
+  padding: 48px 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .welcomeText {
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 24px 0;
-  }
-
-  .welcomeImage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .welcomeIcon {
-      font-size: 120px;
-      color: rgba(255, 255, 255, 0.2);
-    }
+    color: rgba(0, 0, 0, 0.65);
+    margin-top: 16px;
   }
 }
 
-// Stats Section
-.statsSection {
+.statsRow {
   margin-bottom: 48px;
+}
 
-  :global {
-    .ant-card {
-      border-radius: @border-radius-lg;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      transition: all 0.3s;
+// Add other styles without antd theme variables
+.content {
+  padding: 24px;
+}
 
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
-    }
+.statsCard {
+  text-align: center;
+  border-radius: 8px;
+}
 
-    .ant-statistic-title {
-      color: @text-color-secondary;
-    }
+.quickActions {
+  margin-bottom: 48px;
+}
 
-    .ant-statistic-content {
-      color: @heading-color;
-    }
+.actionCard {
+  text-align: center;
+  padding: 24px;
+
+  .actionIcon {
+    font-size: 32px;
+    color: #1890ff;
+    margin-bottom: 16px;
   }
 }
 
-// Devices Section
 .devicesSection {
   margin-bottom: 48px;
+}
 
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.devicesGrid {
   .deviceCard {
-    height: 100%;
-    border-radius: @border-radius-lg;
-    transition: all 0.3s;
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .deviceImage {
-      height: 160px;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: @background-color-light;
-      border-radius: @border-radius-lg @border-radius-lg 0 0;
-
-      :global {
-        .anticon {
-          font-size: 64px;
-          color: @primary-color;
-        }
-      }
+      height: 120px;
+      font-size: 48px;
+      color: #1890ff;
+      background: #f5f5f5;
     }
 
-    :global {
-      .ant-card-meta-title {
-        font-size: 16px;
-        margin-bottom: 12px;
+    .deviceInfo {
+      .deviceStatus {
+        margin-bottom: 8px;
       }
 
-      .ant-card-meta-description {
-        color: @text-color-secondary;
+      .statusAvailable {
+        color: #52c41a;
       }
 
-      .ant-card-actions {
-        border-radius: 0 0 @border-radius-lg @border-radius-lg;
+      .statusBorrowed {
+        color: #1890ff;
+      }
+
+      .statusMaintenance {
+        color: #faad14;
       }
     }
   }
 }
 
-// About Section
 .aboutSection {
-  background: @background-color-light;
-  border-radius: @border-radius-lg;
-  padding: 48px 24px;
-  margin-bottom: 48px;
-
-  .aboutImage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 300px;
-    background: linear-gradient(135deg, @primary-1 0%, @primary-2 100%);
-    border-radius: @border-radius-lg;
+  .aboutCard {
+    height: 100%;
   }
 }
 
 // Responsive adjustments
-@media (max-width: @screen-md) {
+@media (max-width: 576px) {
   .container {
     padding: 16px;
   }
 
-  .loadingContainer {
-    margin: 16px;
-  }
-
   .welcomeSection {
-    padding: 32px 16px;
-    margin-bottom: 32px;
-    text-align: center;
-
-    .welcomeIcon {
-      font-size: 80px;
-      margin-top: 24px;
-    }
+    padding: 24px 16px;
+    margin-bottom: 24px;
   }
 
-  .statsSection {
-    margin-bottom: 32px;
-  }
-
-  .devicesSection {
-    margin-bottom: 32px;
-  }
-
+  .statsRow,
+  .quickActions,
+  .devicesSection,
   .aboutSection {
-    padding: 32px 16px;
-    margin-bottom: 32px;
-    text-align: center;
+    margin-bottom: 24px;
+  }
 
-    .aboutImage {
-      min-height: 200px;
-      margin-top: 24px;
-    }
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
 }
 

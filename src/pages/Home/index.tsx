@@ -1,126 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Typography, Button, Statistic, Spin, message } from 'antd';
-import { 
-  LaptopOutlined, 
-  CheckCircleOutlined, 
-  ClockCircleOutlined, 
+import { Card, Row, Col, Typography, Button, Statistic, Spin, message, Layout, Tag } from 'antd';
+import {
+  LaptopOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
   CloseCircleOutlined,
-  RightOutlined
+  RightOutlined,
+  HistoryOutlined,
+  UserOutlined,
+  CameraOutlined,
+  AudioOutlined,
+  VideoCameraOutlined
 } from '@ant-design/icons';
-import { PageContainer } from '@ant-design/pro-layout';
-import styles from './index.less';
+import { Link, history } from 'umi';
+import './index.less';
 
 const { Title, Paragraph } = Typography;
+const { Content } = Layout;
 
 interface Device {
   id: string;
   name: string;
-  status: 'available' | 'borrowed' | 'maintenance';
-  quantity: number;
-  image: string;
+  status: string;
+  description: string;
+  icon: React.ReactNode;
+  rating: number;
+  borrowCount: number;
 }
 
-// Mock data for devices
-const mockDevices: Device[] = [
-  {
-    id: '1',
-    name: 'Laptop Dell XPS 13',
-    status: 'available',
-    quantity: 5,
-    image: 'https://example.com/laptop.jpg',
-  },
-  {
-    id: '2',
-    name: 'Máy chiếu Epson',
-    status: 'borrowed',
-    quantity: 2,
-    image: 'https://example.com/projector.jpg',
-  },
-  {
-    id: '3',
-    name: 'Máy ảnh Canon EOS',
-    status: 'maintenance',
-    quantity: 1,
-    image: 'https://example.com/camera.jpg',
-  },
-];
-
-const getStatusTag = (status: string) => {
-  switch (status) {
-    case 'available':
-      return <span className={styles.statusAvailable}>Có sẵn</span>;
-    case 'borrowed':
-      return <span className={styles.statusBorrowed}>Đang mượn</span>;
-    case 'maintenance':
-      return <span className={styles.statusMaintenance}>Bảo trì</span>;
-    default:
-      return null;
-  }
-};
+interface Statistics {
+  availableCount: number;
+  borrowedCount: number;
+  maintenanceCount: number;
+  totalDevices: number;
+}
 
 const HomePage: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [devices, setDevices] = useState<Device[]>([
+    { id: '1', name: 'Laptop Dell', status: 'available', description: 'Laptop cho sinh viên', icon: <LaptopOutlined style={{ fontSize: 32, color: '#1890ff' }} />, rating: 4.6, borrowCount: 156 },
+    { id: '2', name: 'Máy chiếu', status: 'borrowed', description: 'Máy chiếu phòng học', icon: <VideoCameraOutlined style={{ fontSize: 32, color: '#722ed1' }} />, rating: 4.4, borrowCount: 98 },
+    { id: '3', name: 'Máy tính bảng', status: 'maintenance', description: 'iPad cho thuyết trình', icon: <AudioOutlined style={{ fontSize: 32, color: '#52c41a' }} />, rating: 4.8, borrowCount: 203 },
+    { id: '4', name: 'Camera', status: 'available', description: 'Camera quay phim', icon: <CameraOutlined style={{ fontSize: 32, color: '#1890ff' }} />, rating: 4.6, borrowCount: 156 }
+  ]);
+  const [statistics, setStatistics] = useState<Statistics>({
+    availableCount: 15,
+    borrowedCount: 8,
+    maintenanceCount: 3,
+    totalDevices: 26
+  });
 
-  useEffect(() => {
-    // Simulate API call
-    const fetchDevices = async () => {
-      try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setDevices(mockDevices);
-      } catch (error) {
-        message.error('Không thể tải danh sách thiết bị');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const getStatusTag = (status: string) => {
+    switch (status) {
+      case 'available':
+        return <Tag color="success">Có sẵn</Tag>;
+      case 'borrowed':
+        return <Tag color="processing">Đang mượn</Tag>;
+      case 'maintenance':
+        return <Tag color="warning">Bảo trì</Tag>;
+      default:
+        return null;
+    }
+  };
 
-    fetchDevices();
-  }, []);
-
-  const availableCount = devices.filter(d => d.status === 'available').length;
-  const borrowedCount = devices.filter(d => d.status === 'borrowed').length;
-  const maintenanceCount = devices.filter(d => d.status === 'maintenance').length;
+  const handleBorrowClick = (deviceId: string) => {
+    history.push(`/devices/borrow?id=${deviceId}`);
+  };
 
   return (
-    <PageContainer>
-      <div className={styles.container}>
+    <Content style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
+      <div style={{ padding: '24px', background: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
         {/* Welcome Section */}
-        <div className={styles.welcomeSection}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '48px',
+          padding: '48px 24px',
+          background: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+        }}>
           <Title level={2}>Chào mừng đến với Hệ thống Mượn Thiết bị</Title>
-          <Paragraph className={styles.welcomeText}>
+          <Paragraph style={{ fontSize: '16px', color: 'rgba(0, 0, 0, 0.65)', marginTop: '16px' }}>
             Hệ thống quản lý mượn trả thiết bị học tập và nghiên cứu của trường
           </Paragraph>
         </div>
 
         {/* Quick Stats */}
-        <Row gutter={[24, 24]} className={styles.statsRow}>
+        <Row gutter={[24, 24]} style={{ marginBottom: '48px' }}>
           <Col xs={24} sm={8}>
-            <Card className={styles.statsCard}>
+            <Card style={{ textAlign: 'center', borderRadius: '8px' }}>
               <Statistic
                 title="Thiết bị có sẵn"
-                value={availableCount}
+                value={statistics.availableCount}
                 prefix={<CheckCircleOutlined />}
                 valueStyle={{ color: '#52c41a' }}
               />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card className={styles.statsCard}>
+            <Card style={{ textAlign: 'center', borderRadius: '8px' }}>
               <Statistic
                 title="Đang được mượn"
-                value={borrowedCount}
+                value={statistics.borrowedCount}
                 prefix={<ClockCircleOutlined />}
                 valueStyle={{ color: '#1890ff' }}
               />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card className={styles.statsCard}>
+            <Card style={{ textAlign: 'center', borderRadius: '8px' }}>
               <Statistic
                 title="Đang bảo trì"
-                value={maintenanceCount}
+                value={statistics.maintenanceCount}
                 prefix={<CloseCircleOutlined />}
                 valueStyle={{ color: '#ff4d4f' }}
               />
@@ -128,43 +119,83 @@ const HomePage: React.FC = () => {
           </Col>
         </Row>
 
+        {/* Quick Actions */}
+        <Row gutter={[24, 24]} style={{ marginBottom: '48px' }}>
+          <Col xs={24} sm={8}>
+            <Card hoverable style={{ textAlign: 'center', padding: '24px' }}>
+              <Link to="/devices">
+                <LaptopOutlined style={{ fontSize: '32px', color: '#1890ff', marginBottom: '16px' }} />
+                <Title level={4}>Danh sách thiết bị</Title>
+                <Paragraph>Xem và mượn các thiết bị có sẵn</Paragraph>
+              </Link>
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card hoverable style={{ textAlign: 'center', padding: '24px' }}>
+              <Link to="/devices/history">
+                <HistoryOutlined style={{ fontSize: '32px', color: '#1890ff', marginBottom: '16px' }} />
+                <Title level={4}>Lịch sử mượn trả</Title>
+                <Paragraph>Theo dõi lịch sử mượn trả thiết bị</Paragraph>
+              </Link>
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card hoverable style={{ textAlign: 'center', padding: '24px' }}>
+              <Link to="/profile">
+                <UserOutlined style={{ fontSize: '32px', color: '#1890ff', marginBottom: '16px' }} />
+                <Title level={4}>Thông tin cá nhân</Title>
+                <Paragraph>Quản lý thông tin và cài đặt tài khoản</Paragraph>
+              </Link>
+            </Card>
+          </Col>
+        </Row>
+
         {/* Devices Grid */}
-        <div className={styles.devicesSection}>
-          <div className={styles.sectionHeader}>
+        <div style={{ marginBottom: '48px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <Title level={3}>Thiết bị có sẵn</Title>
-            <Button type="primary" icon={<RightOutlined />}>
-              Xem tất cả
-            </Button>
+            <Link to="/devices">
+              <Button type="primary" icon={<RightOutlined />}>
+                Xem tất cả
+              </Button>
+            </Link>
           </div>
 
           <Spin spinning={loading}>
-            <Row gutter={[24, 24]} className={styles.devicesGrid}>
+            <Row gutter={[24, 24]}>
               {devices.map(device => (
-                <Col xs={24} sm={12} md={8} lg={6} key={device.id}>
+                <Col xs={24} sm={12} md={6} key={device.id}>
                   <Card
                     hoverable
-                    className={styles.deviceCard}
                     cover={
-                      <div className={styles.deviceImage}>
-                        <LaptopOutlined />
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '120px',
+                        fontSize: '48px',
+                        color: '#1890ff',
+                        background: '#f5f5f5'
+                      }}>
+                        {device.icon}
                       </div>
                     }
                   >
                     <Card.Meta
                       title={device.name}
                       description={
-                        <div className={styles.deviceInfo}>
-                          <div className={styles.deviceStatus}>
+                        <div>
+                          <div style={{ marginBottom: '8px' }}>
                             {getStatusTag(device.status)}
                           </div>
-                          <div className={styles.deviceQuantity}>
-                            Số lượng: {device.quantity}
+                          <div style={{ marginBottom: '16px' }}>
+                            {device.description}
                           </div>
-                          <Button 
-                            type="primary" 
+                          <Button
+                            type="primary"
                             block
                             disabled={device.status !== 'available'}
-                            onClick={() => message.info('Chức năng đang được phát triển')}
+                            onClick={() => handleBorrowClick(device.id)}
                           >
                             Mượn ngay
                           </Button>
@@ -179,11 +210,11 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* About Section */}
-        <div className={styles.aboutSection}>
+        <div>
           <Title level={3}>Về hệ thống</Title>
           <Row gutter={[24, 24]}>
             <Col xs={24} md={12}>
-              <Card className={styles.aboutCard}>
+              <Card style={{ height: '100%' }}>
                 <Title level={4}>Quy trình mượn</Title>
                 <Paragraph>
                   1. Đăng nhập vào hệ thống<br />
@@ -195,7 +226,7 @@ const HomePage: React.FC = () => {
               </Card>
             </Col>
             <Col xs={24} md={12}>
-              <Card className={styles.aboutCard}>
+              <Card style={{ height: '100%' }}>
                 <Title level={4}>Quy định sử dụng</Title>
                 <Paragraph>
                   - Mỗi người chỉ được mượn tối đa 2 thiết bị cùng lúc<br />
@@ -208,7 +239,7 @@ const HomePage: React.FC = () => {
           </Row>
         </div>
       </div>
-    </PageContainer>
+    </Content>
   );
 };
 

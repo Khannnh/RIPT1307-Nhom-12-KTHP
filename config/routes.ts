@@ -5,20 +5,20 @@
 		layout: false,
 		routes: [
 			{
-				path: '/user/auth/login',
+				path: '/user/login',
 				name: 'Đăng nhập',
 				component: '@/pages/user/Login',
 				exact: true,
 			},
 			{
-				path: '/user/auth/register',
+				path: '/user/register',
 				name: 'Đăng ký',
 				component: '@/pages/user/Register',
 				exact: true,
 			},
 			{
 				path: '/user',
-				component: '@/pages/user/Login',
+				redirect: '/user/auth/login',
 				exact: true,
 			},
 		],
@@ -29,18 +29,20 @@
 		path: '/',
 		component: '@/layouts/BasicLayout',
 		routes: [
-			// Trang chủ
+			// Trang chủ - Point to existing TrangChu component
 			{
 				path: '/dashboard',
 				name: 'Trang chủ',
 				icon: 'HomeOutlined',
 				component: '@/pages/Home',
+				layout: false,
 				exact: true,
+				hideInMenu: true,
 			},
 
 			// Quản lý thiết bị
 			{
-				name: 'Quản lý thiết bị',
+				name: 'Lich sử mượn thiết bị',
 				icon: 'AppstoreOutlined',
 				path: '/devices',
 				routes: [
@@ -48,30 +50,37 @@
 						path: '/devices',
 						name: 'Danh sách thiết bị',
 						component: '@/pages/Devices',
+						layout: false,
 						exact: true,
+						hideInMenu: true,
 					},
 					{
 						path: '/devices/borrow',
 						name: 'Mượn thiết bị',
 						component: '@/pages/MuonDo/home',
-						exact: true,
+						layout: false,
+				hideInMenu: true,
 					},
 					{
 						path: '/devices/history',
 						name: 'Lịch sử mượn trả',
 						component: '@/pages/History',
-						exact: true,
+						layout: false,
+				hideInMenu: true,
 					},
 				],
+				layout: false,
+				hideInMenu: true,
 			},
 
 			// Thống kê
 			{
 				path: '/statistics',
-				name: 'Thống kê',
+				name: 'Lịch sử mượn',
 				icon: 'BarChartOutlined',
-				component: '@/pages/Statistics',
-				exact: true,
+				component: '@/pages/History',
+				layout: false,
+				hideInMenu: true,
 			},
 
 			// Thông tin cá nhân
@@ -80,15 +89,16 @@
 				name: 'Thông tin cá nhân',
 				icon: 'UserOutlined',
 				component: '@/pages/Profile',
-				exact: true,
+				layout: false,
+				hideInMenu: true,
 			},
 
-			// Giới thiệu
+			// Giới thiệu - Point to existing GioiThieu component
 			{
 				path: '/about',
 				name: 'Giới thiệu',
 				icon: 'InfoCircleOutlined',
-				component: '@/pages/About',
+				component: '@/pages/TienIch/GioiThieu',
 				hideInMenu: true,
 				exact: true,
 			},
@@ -117,7 +127,7 @@
 				hideInMenu: true,
 			},
 
-			// Error pages
+			// Error pages - Point to existing exception components
 			{
 				path: '/403',
 				component: '@/pages/exception/403',
@@ -131,6 +141,12 @@
 				exact: true,
 			},
 			{
+				path: '/500',
+				component: '@/pages/exception/500',
+				layout: false,
+				exact: true,
+			},
+			{
 				path: '/hold-on',
 				component: '@/pages/exception/DangCapNhat',
 				layout: false,
@@ -140,7 +156,7 @@
 			// Root path
 			{
 				path: '/',
-				component: '@/pages/Home',
+				redirect: '/dashboard',
 				exact: true,
 			},
 

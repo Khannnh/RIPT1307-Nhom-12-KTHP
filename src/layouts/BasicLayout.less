@@ -1,5 +1,10 @@
-@import '~antd/es/style/themes/default.less';
+@import '~antd/dist/antd.less'; // nếu bạn dùng Ant Design < v5
 
+@media (max-width: 576px) {
+  .my-class {
+    display: none;
+  }
+}
 .layout {
   min-height: 100vh;
 }
@@ -16,7 +21,7 @@
 
   .logo {
     margin-right: 48px;
-    
+
     a {
       display: flex;
       align-items: center;
@@ -45,7 +50,7 @@
     :global {
       .ant-menu-item {
         color: rgba(255, 255, 255, 0.85);
-        
+
         &:hover {
           color: white;
         }
@@ -131,7 +136,7 @@
 }
 
 // Responsive adjustments
-@media (max-width: @screen-md) {
+@media (max-width: 768px) {
   .header {
     padding: 0 16px;
 
@@ -167,4 +172,4 @@
   .footer {
     background: @component-background;
   }
-} 
+}

@@ -1,31 +1,41 @@
 import React, { useState } from 'react';
-import { PageContainer } from '@ant-design/pro-layout';
-import { 
-  Card, 
-  Table, 
-  Tag, 
-  Space, 
-  Button, 
-  Typography, 
-  Modal, 
-  Form, 
-  Input, 
+import { Layout } from 'antd';
+import {
+  Card,
+  Table,
+  Tag,
+  Space,
+  Button,
+  Typography,
+  Modal,
+  Form,
+  Input,
   Select,
   InputNumber,
-  message 
+  message
 } from 'antd';
-import { 
-  PlusOutlined, 
-  EditOutlined, 
+import {
+  PlusOutlined,
+  EditOutlined,
   DeleteOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ClockCircleOutlined 
+  ClockCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
+// Create a simple styles object instead of importing
+const styles = {
+  content: {
+    padding: '24px',
+    background: '#fff',
+    minHeight: '100vh'
+  }
+};
+
 const { Title } = Typography;
 const { Option } = Select;
+const { Content } = Layout;
 
 interface Device {
   key: string;
@@ -117,7 +127,7 @@ const DevicesPage: React.FC = () => {
     form.validateFields().then(values => {
       if (editingDevice) {
         // Update existing device
-        setDevices(devices.map(device => 
+        setDevices(devices.map(device =>
           device.key === editingDevice.key ? { ...values, key: device.key } : device
         ));
         message.success('Cập nhật thiết bị thành công');
@@ -180,15 +190,15 @@ const DevicesPage: React.FC = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
           >
             Sửa
           </Button>
-          <Button 
-            danger 
+          <Button
+            danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.key)}
           >
@@ -200,12 +210,12 @@ const DevicesPage: React.FC = () => {
   ];
 
   return (
-    <PageContainer>
+    <Content style={styles.content}>
       <Card>
         <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Title level={2}>Quản lý thiết bị</Title>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             icon={<PlusOutlined />}
             onClick={handleAdd}
           >
@@ -213,8 +223,8 @@ const DevicesPage: React.FC = () => {
           </Button>
         </div>
 
-        <Table 
-          columns={columns} 
+        <Table
+          columns={columns}
           dataSource={devices}
           pagination={{
             pageSize: 10,
@@ -293,8 +303,8 @@ const DevicesPage: React.FC = () => {
           </Form>
         </Modal>
       </Card>
-    </PageContainer>
+    </Content>
   );
 };
 
-export default DevicesPage; 
+export default DevicesPage;

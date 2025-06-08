@@ -1,7 +1,9 @@
 import Footer from '@/components/Footer';
 import RightContent from '@/components/RightContent';
+import { ConfigProvider } from 'antd';
 import { notification } from 'antd';
 import 'moment/locale/vi';
+import viVN from 'antd/es/locale/vi_VN';
 import type { RequestConfig, RunTimeLayoutConfig } from 'umi';
 import { getIntl, getLocale, history } from 'umi';
 import type { RequestOptionsInit, ResponseError } from 'umi-request';
@@ -114,15 +116,22 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
 		),
 
 		childrenRender: (dom) => (
-			<OIDCBounder>
-				<ErrorBoundary>
-					{/* <TechnicalSupportBounder> */}
-					<OneSignalBounder>{dom}</OneSignalBounder>
-					{/* </TechnicalSupportBounder> */}
-				</ErrorBoundary>
-			</OIDCBounder>
+			<ConfigProvider locale={viVN}>
+				<OIDCBounder>
+					<ErrorBoundary>
+						{/* <TechnicalSupportBounder> */}
+						<OneSignalBounder>{dom}</OneSignalBounder>
+						{/* </TechnicalSupportBounder> */}
+					</ErrorBoundary>
+				</OIDCBounder>
+			</ConfigProvider>
 		),
 		menuHeaderRender: undefined,
 		...initialState?.settings,
 	};
+};
+
+const customTheme = {
+	primaryColor: '#1890ff',
+	// other theme variables
 };

@@ -1,17 +1,19 @@
 import React from 'react';
-import { PageContainer } from '@ant-design/pro-layout';
+import { Layout } from 'antd';
 import { Card, Typography, Row, Col, Space, Button, Divider } from 'antd';
-import { 
-  TeamOutlined, 
-  SafetyCertificateOutlined, 
+import {
+  TeamOutlined,
+  SafetyCertificateOutlined,
   ClockCircleOutlined,
   LaptopOutlined,
   MailOutlined,
   PhoneOutlined,
   GlobalOutlined
 } from '@ant-design/icons';
+// import styles from './index.less';
 
 const { Title, Paragraph, Text } = Typography;
+const { Content } = Layout;
 
 const features = [
   {
@@ -45,9 +47,9 @@ const contactInfo = {
 
 const AboutPage: React.FC = () => {
   return (
-    <PageContainer>
+    <Content className={styles.content}>
       {/* Hero Section */}
-      <Card className="hero-section" style={{ 
+      <Card className="hero-section" style={{
         background: 'linear-gradient(135deg, #1890ff 0%, #722ed1 100%)',
         color: 'white',
         textAlign: 'center',
@@ -124,9 +126,9 @@ const AboutPage: React.FC = () => {
       </Card>
 
       {/* Footer */}
-      <div style={{ 
-        textAlign: 'center', 
-        marginTop: 48, 
+      <div style={{
+        textAlign: 'center',
+        marginTop: 48,
         padding: '24px 0',
         borderTop: '1px solid #f0f0f0'
       }}>
@@ -134,8 +136,8 @@ const AboutPage: React.FC = () => {
           © 2024 Hệ thống quản lý mượn thiết bị. All rights reserved.
         </Paragraph>
       </div>
-    </PageContainer>
+    </Content>
   );
 };
 
-export default AboutPage; 
+export default AboutPage;

@@ -16,6 +16,8 @@ export default defineConfig({
 		// https://umijs.org/zh-CN/plugins/plugin-layout
 		locale: true,
 		...defaultSettings,
+		title: 'Hệ thống mượn thiết bị',
+		logo: '/logo.png',
 	},
 	// https://umijs.org/zh-CN/plugins/plugin-locale
 	locale: {
@@ -27,7 +29,7 @@ export default defineConfig({
 		// baseSeparator: '_',
 	},
 	dynamicImport: {
-		loading: '@ant-design/pro-layout/es/PageLoading',
+		loading: '@/components/PageLoading',
 	},
 	targets: {
 		ie: 11,
