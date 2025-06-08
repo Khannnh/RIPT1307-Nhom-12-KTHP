@@ -1,0 +1,117 @@
+@primary-red: #ff5918e2;
+@dark-red :rgb(219, 9, 9);
+.hero-section-wrapper {
+  margin-bottom: 30px; // Khoảng cách với phần biểu đồ bên dưới
+}
+
+.time-filter-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #fff;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px; /* Khoảng cách với các thẻ bên dưới */
+  flex-wrap: wrap; // Cho phép xuống dòng trên màn hình nhỏ
+
+  .filter-group {
+      display: flex;
+      align-items: center;
+      color: #555;
+      font-weight: 500;
+      white-space: nowrap; // Ngăn không cho "Bộ lọc thời gian" bị ngắt dòng
+
+      .icon {
+          margin-right: 5px;
+          font-size: 18px;
+      }
+  }
+
+  .filter-button {
+    background-color: @primary-red;
+    color: white;
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    color: @primary-red;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #e0e2e5;
+    }
+
+    &.active {
+      background-color: white;
+      color: @primary-red;
+      border-color: #e80404;
+    }
+  }
+
+  .filter-dropdown {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #ffffff; 
+    background-color: @primary-red;
+    cursor: pointer;
+    -webkit-appearance: none; /* Loại bỏ style mặc định của trình duyệt */
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23555555" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position-x: calc(100% - 10px);
+    background-position-y: center;
+    padding-right: 30px; /* Tạo không gian cho biểu tượng mũi tên */
+  }
+}
+
+.hero-cards-container {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  flex-wrap: wrap; // Cho phép xuống dòng trên màn hình nhỏ
+
+  .card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 280px;
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+
+      h3 {
+        margin: 0;
+        font-size: 20px;
+        color: #555;
+      }
+
+      .icon {
+        font-size: 24px;
+        color: #888;
+      }
+    }
+
+    .card-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .card-description {
+      font-size: 18px;
+      color: @dark-red;
+        font-weight: 600;
+    }
+  }
+}

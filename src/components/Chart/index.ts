@@ -1,23 +1,18 @@
+// src/components/Chart/index.ts
 import { type ApexOptions } from 'apexcharts';
-
-export * from './ColumnChart';
-export * from './DonutChart';
-export * from './LineChart';
 
 export type DataChartType = {
 	title?: string;
-	xAxis: string[];
-	/**
-	 * Dùng cho trường hợp nhiều column
-	 */
-	yAxis: number[][];
-	yLabel: string[];
+	xAxis: string[] | number[]; // Danh sách các nhãn trên trục X (tên thiết bị cho cột/tròn)
+	yAxis: number[][]; // Mảng 2 chiều chứa các giá trị cho trục Y (số lượt mượn)
+	yLabel: string[]; // Nhãn cho từng series (ví dụ: ['Số lượt mượn'])
 	height?: number;
 	width?: number;
-	type?: 'bar' | 'area';
-	colors?: string[];
+	type?: 'bar' | 'donut' | 'line' | 'area' | 'radialBar' | 'pie'; // Các kiểu biểu đồ ApexCharts
 	formatY?: (val: number) => string;
-	showTotal?: boolean;
-
-	otherOptions?: ApexOptions;
+	colors?: string[];
+	showTotal?: boolean; // Dành riêng cho DonutChart
+	otherOptions?: ApexOptions; // Cho phép truyền thêm các tùy chọn ApexCharts
 };
+
+// Bạn có thể thêm các export khác nếu cần

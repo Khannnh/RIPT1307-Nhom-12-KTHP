@@ -36,13 +36,6 @@
 		component: './RandomUser',
 		icon: 'ArrowsAltOutlined',
 	},
-	{
-		path: '/ThongKe',
-		name: 'Thống kê_Quản trị viên',
-		component: './ThongKe',
-		icon: 'BarChartOutlined',
-		//layout: true,
-	},
   {
     path: '/thongke-group', // Đây là route cha (không có component)
     name: 'Thống Kê LendHub', // Tên nhóm trong menu
@@ -53,16 +46,22 @@
         path: '/thongke-group/admin', // Đường dẫn cho "Thống kê_Quản trị viên"
         name: 'Thống kê Quản trị viên',
         component: '@/pages/ThongKe/index', // Trỏ tới src/pages/ThongKe/index.tsx
-        // icon: 'BarChartOutlined', // Icon riêng cho item con nếu muốn
+        icon: 'BarChartOutlined', 
       },
       {
         path: '/thongke-group/bieudo', // Đường dẫn cho "Thống kê biểu đồ"
         name: 'Thống kê biểu đồ',
-        component: '@/pages/ThongKe/chartPage', // Trỏ tới src/pages/ThongKe/chartPage.tsx
-        // icon: 'LineChartOutlined', // Icon riêng cho item con nếu muốn
+        component: '@/pages/ThongKe/DeviceStatisticsPage', // Trỏ tới src/pages/ThongKe/chartPage.tsx
+        icon: 'LineChartOutlined', 
       },
     ],
   },
+  	{
+		path: '/bieudo',
+		name: 'Trang Biểu Đồ', 
+		component: '@/pages/ThongKe/staticPage',
+		icon: 'ArrowsAltOutlined',
+	},
 	{
 		path: '/yeucaumuon',
 		name: 'Gửi yêu cầu mượn',
