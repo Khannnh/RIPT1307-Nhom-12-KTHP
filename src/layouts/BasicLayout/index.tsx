@@ -1,5 +1,14 @@
 import React from 'react';
-import { Layout, Menu, Button, Avatar, Space, Typography } from 'antd';
+import {
+  Layout,
+  Menu,
+  Button,
+  Avatar,
+  Space,
+  Typography,
+  Dropdown,
+  MenuProps
+} from 'antd';
 import {
   MenuOutlined,
   HomeOutlined,
@@ -7,6 +16,9 @@ import {
   BarChartOutlined,
   UserOutlined,
   LogoutOutlined,
+  SettingOutlined,
+  HistoryOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import { Link, useLocation, history } from 'umi';
 import './BasicLayout.less';
@@ -17,7 +29,7 @@ const { Text } = Typography;
 const BasicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
 
-  const menuItems = [
+  const menuItems: MenuProps['items'] = [
     {
       key: '/dashboard',
       icon: <HomeOutlined />,
@@ -26,7 +38,12 @@ const BasicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       key: '/devices',
       icon: <AppstoreOutlined />,
-      label: <Link to="/devices">Quản lý thiết bị</Link>,
+      label: <Link to="/devices">Thiết bị</Link>,
+    },
+    {
+      key: '/history',
+      icon: <HistoryOutlined />,
+      label: <Link to="/history">Lịch sử</Link>,
     },
     {
       key: '/statistics',
@@ -35,11 +52,31 @@ const BasicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userName');
-    history.push('/user/login');
-  };
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: <Link to="/profile">Thông tin cá nhân</Link>,
+    },
+    {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: 'Cài đặt',
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Đăng xuất',
+      onClick: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userName');
+        history.push('/user/login');
+      },
+    },
+  ];
 
   return (
     <Layout className="main-layout">
@@ -52,7 +89,7 @@ const BasicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <AppstoreOutlined className="navbar__logo-icon" />
               </div>
               <Text className="navbar__logo-text">
-                DeviceHub
+                lendHUB
               </Text>
             </Link>
           </div>
@@ -69,18 +106,19 @@ const BasicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* User Actions */}
           <div className="navbar__actions">
-            <Space>
-              <Avatar size="small" icon={<UserOutlined />} />
-              <Text className="navbar__user-name">
-                {localStorage.getItem('userName') || 'User'}
-              </Text>
-              <Button
-                type="text"
-                icon={<LogoutOutlined />}
-                onClick={handleLogout}
-                className="navbar__logout-btn"
-              />
-            </Space>
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow
+            >
+              <Space className="navbar__user">
+                <Avatar size="small" icon={<UserOutlined />} />
+                <Text className="navbar__user-name">
+                  {localStorage.getItem('userName') || 'User'}
+                </Text>
+                <DownOutlined className="navbar__user-dropdown-icon" />
+              </Space>
+            </Dropdown>
           </div>
         </div>
       </Header>

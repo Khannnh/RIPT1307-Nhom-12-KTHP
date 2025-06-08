@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
 import {
   Card,
@@ -12,7 +12,7 @@ import {
   Input,
   Select,
   InputNumber,
-  message
+  message,
 } from 'antd';
 import {
   PlusOutlined,
@@ -20,9 +20,18 @@ import {
   DeleteOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import {
+  getDevices,
+  createDevice,
+  updateDevice,
+  deleteDevice,
+  Device,
+  DeviceListParams,
+  DeviceListResponse,
+} from '@/services/device.service';
 
 // Create a simple styles object instead of importing
 const styles = {
@@ -37,61 +46,64 @@ const { Title } = Typography;
 const { Option } = Select;
 const { Content } = Layout;
 
-interface Device {
-  key: string;
-  name: string;
-  type: string;
-  status: 'available' | 'in_use' | 'broken';
-  quantity: number;
-  location: string;
-  description: string;
-}
-
-// Mock data
-const initialDevices: Device[] = [
-  {
-    key: '1',
-    name: 'Laptop Dell XPS 13',
-    type: 'Laptop',
-    status: 'available',
-    quantity: 5,
-    location: 'Phòng A101',
-    description: 'Laptop Dell XPS 13, Core i7, 16GB RAM, 512GB SSD',
-  },
-  {
-    key: '2',
-    name: 'Máy chiếu Epson',
-    type: 'Projector',
-    status: 'in_use',
-    quantity: 2,
-    location: 'Phòng B203',
-    description: 'Máy chiếu Epson EB-X05, độ phân giải 1024x768',
-  },
-  {
-    key: '3',
-    name: 'Màn hình Dell 24"',
-    type: 'Monitor',
-    status: 'broken',
-    quantity: 1,
-    location: 'Phòng C305',
-    description: 'Màn hình Dell 24 inch, độ phân giải Full HD',
-  },
-];
-
 const DevicesPage: React.FC = () => {
-  const [devices, setDevices] = useState<Device[]>(initialDevices);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
   const [form] = Form.useForm();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+
+  const fetchDevices = async (params: DeviceListParams = {}) => {
+    try {
+      setLoading(true);
+      const response: DeviceListResponse = await getDevices({
+        current: params.current || pagination.current,
+        pageSize: params.pageSize || pagination.pageSize,
+        keyword: params.keyword,
+      });
+      console.log('API Response for Devices Page:', response);
+      setDevices(response.data);
+      setPagination({
+        current: response.current,
+        pageSize: response.pageSize,
+        total: response.total,
+      });
+    } catch (error) {
+      console.error('Error fetching devices:', error);
+      message.error('Không thể tải danh sách thiết bị');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  const handleTableChange = (pagination: any) => {
+    fetchDevices({
+      current: pagination.current,
+      pageSize: pagination.pageSize,
+    });
+  };
 
   const getStatusTag = (status: string) => {
     switch (status) {
       case 'available':
         return <Tag icon={<CheckCircleOutlined />} color="success">Sẵn sàng</Tag>;
-      case 'in_use':
+      case 'borrowed':
         return <Tag icon={<ClockCircleOutlined />} color="processing">Đang sử dụng</Tag>;
       case 'broken':
         return <Tag icon={<CloseCircleOutlined />} color="error">Hỏng</Tag>;
+      case 'maintenance':
+        return <Tag icon={<ClockCircleOutlined />} color="warning">Bảo trì</Tag>;
+      case 'lost':
+        return <Tag icon={<CloseCircleOutlined />} color="red">Mất</Tag>;
       default:
         return null;
     }
@@ -109,39 +121,44 @@ const DevicesPage: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (key: string) => {
+  const handleDelete = (id: string) => {
     Modal.confirm({
       title: 'Xác nhận xóa',
       content: 'Bạn có chắc chắn muốn xóa thiết bị này?',
       okText: 'Xóa',
       okType: 'danger',
       cancelText: 'Hủy',
-      onOk: () => {
-        setDevices(devices.filter(device => device.key !== key));
-        message.success('Đã xóa thiết bị thành công');
+      onOk: async () => {
+        try {
+          await deleteDevice(id);
+          message.success('Đã xóa thiết bị thành công');
+          fetchDevices(); // Refresh list
+        } catch (error) {
+          console.error('Error deleting device:', error);
+          message.error('Xóa thiết bị thất bại');
+        }
       },
     });
   };
 
-  const handleModalOk = () => {
-    form.validateFields().then(values => {
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
       if (editingDevice) {
         // Update existing device
-        setDevices(devices.map(device =>
-          device.key === editingDevice.key ? { ...values, key: device.key } : device
-        ));
+        await updateDevice(editingDevice.id, values);
         message.success('Cập nhật thiết bị thành công');
       } else {
         // Add new device
-        const newDevice = {
-          ...values,
-          key: Date.now().toString(),
-        };
-        setDevices([...devices, newDevice]);
+        await createDevice(values);
         message.success('Thêm thiết bị thành công');
       }
       setIsModalVisible(false);
-    });
+      fetchDevices(); // Refresh list
+    } catch (error) {
+      console.error('Validation failed:', error);
+      message.error('Vui lòng điền đầy đủ thông tin');
+    }
   };
 
   const columns: ColumnsType<Device> = [
@@ -152,15 +169,14 @@ const DevicesPage: React.FC = () => {
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
-      title: 'Loại',
-      dataIndex: 'type',
-      key: 'type',
-      filters: [
-        { text: 'Laptop', value: 'Laptop' },
-        { text: 'Projector', value: 'Projector' },
-        { text: 'Monitor', value: 'Monitor' },
-      ],
-      onFilter: (value, record) => record.type === value,
+      title: 'Mã số',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+    },
+    {
+      title: 'Danh mục',
+      dataIndex: 'category',
+      key: 'category',
     },
     {
       title: 'Trạng thái',
@@ -169,7 +185,8 @@ const DevicesPage: React.FC = () => {
       render: (status: string) => getStatusTag(status),
       filters: [
         { text: 'Sẵn sàng', value: 'available' },
-        { text: 'Đang sử dụng', value: 'in_use' },
+        { text: 'Đang mượn', value: 'borrowed' },
+        { text: 'Bảo trì', value: 'maintenance' },
         { text: 'Hỏng', value: 'broken' },
       ],
       onFilter: (value, record) => record.status === value,
@@ -178,34 +195,12 @@ const DevicesPage: React.FC = () => {
       title: 'Số lượng',
       dataIndex: 'quantity',
       key: 'quantity',
-      sorter: (a, b) => a.quantity - b.quantity,
+      sorter: (a: Device, b: Device) => a.quantity - b.quantity,
     },
     {
       title: 'Vị trí',
       dataIndex: 'location',
       key: 'location',
-    },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      render: (_, record) => (
-        <Space size="middle">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            Sửa
-          </Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key)}
-          >
-            Xóa
-          </Button>
-        </Space>
-      ),
     },
   ];
 
@@ -214,26 +209,25 @@ const DevicesPage: React.FC = () => {
       <Card>
         <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Title level={2}>Quản lý thiết bị</Title>
-          <Button
+          {/* <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAdd}
           >
             Thêm thiết bị
-          </Button>
+          </Button> */}
         </div>
 
         <Table
           columns={columns}
           dataSource={devices}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Tổng số ${total} thiết bị`,
-          }}
+          loading={loading}
+          rowKey="id"
+          pagination={pagination}
+          onChange={handleTableChange}
         />
 
-        <Modal
+        {/* <Modal
           title={editingDevice ? 'Sửa thiết bị' : 'Thêm thiết bị mới'}
           visible={isModalVisible}
           onOk={handleModalOk}
@@ -243,7 +237,7 @@ const DevicesPage: React.FC = () => {
           <Form
             form={form}
             layout="vertical"
-            initialValues={{ status: 'available' }}
+            initialValues={{ status: 'available', quantity: 1, location: '' }}
           >
             <Form.Item
               name="name"
@@ -254,14 +248,24 @@ const DevicesPage: React.FC = () => {
             </Form.Item>
 
             <Form.Item
-              name="type"
-              label="Loại thiết bị"
-              rules={[{ required: true, message: 'Vui lòng chọn loại thiết bị' }]}
+              name="serialNumber"
+              label="Mã số"
+              rules={[{ required: true, message: 'Vui lòng nhập mã số thiết bị' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              name="category"
+              label="Danh mục"
+              rules={[{ required: true, message: 'Vui lòng chọn danh mục thiết bị' }]}
             >
               <Select>
                 <Option value="Laptop">Laptop</Option>
                 <Option value="Projector">Máy chiếu</Option>
                 <Option value="Monitor">Màn hình</Option>
+                <Option value="Camera">Camera</Option>
+                <Option value="Microphone">Microphone</Option>
                 <Option value="Other">Khác</Option>
               </Select>
             </Form.Item>
@@ -273,7 +277,8 @@ const DevicesPage: React.FC = () => {
             >
               <Select>
                 <Option value="available">Sẵn sàng</Option>
-                <Option value="in_use">Đang sử dụng</Option>
+                <Option value="borrowed">Đang mượn</Option>
+                <Option value="maintenance">Bảo trì</Option>
                 <Option value="broken">Hỏng</Option>
               </Select>
             </Form.Item>
@@ -301,7 +306,7 @@ const DevicesPage: React.FC = () => {
               <Input.TextArea rows={4} />
             </Form.Item>
           </Form>
-        </Modal>
+        </Modal> */}
       </Card>
     </Content>
   );

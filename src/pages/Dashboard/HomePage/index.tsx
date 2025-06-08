@@ -1,23 +1,26 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Card, Col, Row, Statistic } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getOverviewStatistics, OverviewStatistics } from '@/services/statistics.service';
+import { getOverviewStatistics, OverviewStatistics, getUserStatistics, UserStatistics } from '@/services/statistics.service';
 import { getDevices } from '@/services/device.service';
 import { Device } from '@/services/device.service';
 
 const HomePage: React.FC = () => {
-  const [statistics, setStatistics] = useState<OverviewStatistics>();
+  const [overviewStatistics, setOverviewStatistics] = useState<OverviewStatistics>();
+  const [userStatistics, setUserStatistics] = useState<UserStatistics>();
   const [recentDevices, setRecentDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [stats, devices] = await Promise.all([
+        const [overviewStats, userStats, devices] = await Promise.all([
           getOverviewStatistics(),
+          getUserStatistics(),
           getDevices({ pageSize: 5, current: 1 }),
         ]);
-        setStatistics(stats);
+        setOverviewStatistics(overviewStats);
+        setUserStatistics(userStats);
         setRecentDevices(devices.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -36,7 +39,7 @@ const HomePage: React.FC = () => {
           <Card loading={loading}>
             <Statistic
               title="Tổng số thiết bị"
-              value={statistics?.totalDevices}
+              value={overviewStatistics?.totalDevices}
               valueStyle={{ color: '#3f8600' }}
             />
           </Card>
@@ -45,7 +48,7 @@ const HomePage: React.FC = () => {
           <Card loading={loading}>
             <Statistic
               title="Thiết bị có sẵn"
-              value={statistics?.availableDevices}
+              value={overviewStatistics?.availableDevices}
               valueStyle={{ color: '#3f8600' }}
             />
           </Card>
@@ -54,7 +57,7 @@ const HomePage: React.FC = () => {
           <Card loading={loading}>
             <Statistic
               title="Thiết bị đang mượn"
-              value={statistics?.borrowedDevices}
+              value={overviewStatistics?.borrowedDevices}
               valueStyle={{ color: '#cf1322' }}
             />
           </Card>
@@ -63,7 +66,7 @@ const HomePage: React.FC = () => {
           <Card loading={loading}>
             <Statistic
               title="Yêu cầu đang chờ"
-              value={statistics?.pendingBorrowRequests}
+              value={overviewStatistics?.pendingRequests}
               valueStyle={{ color: '#faad14' }}
             />
           </Card>
@@ -88,12 +91,12 @@ const HomePage: React.FC = () => {
           <Card title="Thống kê người dùng" loading={loading}>
             <Statistic
               title="Tổng số người dùng"
-              value={statistics?.totalUsers}
+              value={userStatistics?.totalUsers}
               valueStyle={{ color: '#3f8600' }}
             />
             <Statistic
               title="Yêu cầu mượn tổng cộng"
-              value={statistics?.totalBorrowRequests}
+              value={userStatistics?.totalBorrows}
               valueStyle={{ color: '#faad14' }}
               style={{ marginTop: 16 }}
             />
@@ -104,4 +107,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage; 
+export default HomePage;

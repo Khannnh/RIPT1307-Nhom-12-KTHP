@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '@/utils/axios';
 
 export interface BorrowRequest {
   id: string;
@@ -22,21 +22,21 @@ export interface CreateBorrowRequestParams {
 }
 
 export const createBorrowRequest = async (params: CreateBorrowRequestParams): Promise<BorrowRequest> => {
-  const response = await axios.post('/api/borrow-requests', params);
+  const response = await axios.post('/user/borrow-requests', params);
   return response.data;
 };
 
 export const getUserBorrowRequests = async (): Promise<BorrowRequest[]> => {
-  const response = await axios.get('/api/borrow-requests');
+  const response = await axios.get('/user/borrow-requests');
   return response.data;
 };
 
 export const getBorrowRequestDetail = async (id: string): Promise<BorrowRequest> => {
-  const response = await axios.get(`/api/borrow-requests/${id}`);
+  const response = await axios.get(`/user/borrow-requests/${id}`);
   return response.data;
 };
 
 export const cancelBorrowRequest = async (id: string): Promise<BorrowRequest> => {
-  const response = await axios.put(`/api/borrow-requests/${id}/cancel`);
+  const response = await axios.put(`/user/borrow-requests/${id}/cancel`);
   return response.data;
-}; 
+};

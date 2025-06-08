@@ -47,10 +47,10 @@ const Login: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
 
       if (storedRole === 'admin') {
         message.success('Đăng nhập thành công với quyền Admin!');
-        history.push('/admin/devices');
+        history.push('/dashboard');
       } else {
         message.success('Đăng nhập thành công!');
-        history.push('/user/devices');
+        history.push('/dashboard');
       }
 
       if (onSuccess) onSuccess();

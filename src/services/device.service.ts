@@ -1,13 +1,17 @@
-import axios from 'axios';
+import axios from '@/utils/axios';
 
 export interface Device {
   id: string;
   name: string;
   serialNumber: string;
   category: string;
-  status: 'available' | 'borrowed' | 'maintenance' | 'broken';
+  status: 'available' | 'borrowed' | 'maintenance' | 'broken' | 'lost';
   location: string;
   description?: string;
+  quantity: number;
+  rating?: number;
+  borrowCount?: number;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,16 +38,30 @@ export interface DeviceStatistics {
 }
 
 export const getDevices = async (params: DeviceListParams = {}): Promise<DeviceListResponse> => {
-  const response = await axios.get('/api/devices', { params });
+  const response = await axios.get('/user/devices', { params });
   return response.data;
 };
 
 export const getDeviceById = async (id: string): Promise<Device> => {
-  const response = await axios.get(`/api/devices/${id}`);
+  const response = await axios.get(`/user/devices/${id}`);
   return response.data;
 };
 
 export const getDeviceStatistics = async (): Promise<DeviceStatistics> => {
-  const response = await axios.get('/api/devices/statistics');
+  const response = await axios.get('/user/devices/statistics');
   return response.data;
-}; 
+};
+
+export const createDevice = async (device: Omit<Device, 'id' | 'createdAt' | 'updatedAt'>): Promise<Device> => {
+  const response = await axios.post('/user/devices', device);
+  return response.data;
+};
+
+export const updateDevice = async (id: string, device: Partial<Omit<Device, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Device> => {
+  const response = await axios.put(`/user/devices/${id}`, device);
+  return response.data;
+};
+
+export const deleteDevice = async (id: string): Promise<void> => {
+  await axios.delete(`/user/devices/${id}`);
+};
