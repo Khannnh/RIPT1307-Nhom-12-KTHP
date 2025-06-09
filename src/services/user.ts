@@ -31,8 +31,44 @@ export async function loginAdmin(data: { username: string; password: string }) {
   });
 }
 
-export async function logoutUser() {
-  return axios('http://localhost:3456/user/auth/logout', {
-    method: 'POST',
+export async function getUserProfile() {
+  return axios('http://localhost:3456/user/profile', {
+    method: 'GET',
   });
+}
+
+export async function updateUserProfile(data: {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  dob?: string;
+  gender?: string;
+}) {
+  return axios('http://localhost:3456/user/profile', {
+    method: 'PUT',
+    data,
+  });
+}
+
+export async function logoutUser() {
+  try {
+    // Call API to invalidate token on server
+    await axios('http://localhost:3456/user/auth/logout', {
+      method: 'POST',
+    });
+  } catch (error) {
+    // Log error but continue with local cleanup
+    console.error('Logout API call failed:', error);
+  } finally {
+    // Always clear local data regardless of API success/failure
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userInfo');
+
+    // Redirect to login page
+    window.location.href = '/user/auth/login';
+  }
+
+  return { success: true, message: 'Logged out successfully' };
 }
