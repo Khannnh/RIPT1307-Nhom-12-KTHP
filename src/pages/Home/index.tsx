@@ -37,16 +37,27 @@ const HomePage: React.FC = () => {
     const fetchTopDevices = async () => {
       setLoading(true);
       try {
+        console.log('Attempting to fetch top devices...');
         const response = await getDevices({ pageSize: 6 });
-        console.log('API Response for Top Devices:', response);
-        const devicesWithMockData = response.data.map(device => ({
+        console.log('Raw API Response for Top Devices:', response);
+
+        if (!response || !response.data) {
+          console.warn('API Response or response.data is undefined/null for top devices.', response);
+          setTopDevices([]); // Ensure topDevices is an empty array
+          return;
+        }
+
+        const devicesWithMockData = (response.data || []).map(device => ({
           ...device,
-          rating: Math.floor(Math.random() * (50 - 40) + 40) / 10,
-          borrowCount: Math.floor(Math.random() * (300 - 50) + 50),
+          // Ensure rating and borrowCount are always numbers
+          rating: typeof device.rating === 'number' ? device.rating : Math.floor(Math.random() * (50 - 40) + 40) / 10,
+          borrowCount: typeof device.borrowCount === 'number' ? device.borrowCount : Math.floor(Math.random() * (300 - 50) + 50),
         }));
+        console.log('Processed Top Devices:', devicesWithMockData);
         setTopDevices(devicesWithMockData);
       } catch (error) {
         console.error('Error fetching top devices:', error);
+        setTopDevices([]); // Set empty array on error as well
       } finally {
         setLoading(false);
       }
@@ -150,15 +161,21 @@ const HomePage: React.FC = () => {
                   className="device-card"
                 >
                   <div className="device-card-content">
-                    <div className="device-icon">
-                      {/* Placeholder icon based on category or default */}
-                      {device.category === 'Laptop' && <LaptopOutlined />}
-                      {device.category === 'Camera' && <CameraOutlined />}
-                      {device.category === 'Projector' && <VideoCameraOutlined />}
-                      {device.category === 'Microphone' && <AudioOutlined />}
-                      {device.category === 'Monitor' && <AppstoreOutlined />}
-                      {device.category === 'Other' && <AppstoreOutlined />}
-                      {!device.category && <AppstoreOutlined />}
+                    <div className="device-image-wrapper">
+                      {device.imageUrl ? (
+                        <img src={device.imageUrl} alt={device.name} className="device-image" />
+                      ) : (
+                        <div className="device-icon-placeholder">
+                          {/* Placeholder icon based on category or default */}
+                          {device.category === 'Laptop' && <LaptopOutlined />}
+                          {device.category === 'Camera' && <CameraOutlined />}
+                          {device.category === 'Projector' && <VideoCameraOutlined />}
+                          {device.category === 'Microphone' && <AudioOutlined />}
+                          {device.category === 'Monitor' && <AppstoreOutlined />}
+                          {device.category === 'Other' && <AppstoreOutlined />}
+                          {!device.category && <AppstoreOutlined />}
+                        </div>
+                      )}
                     </div>
                     <div className="device-info">
                       <h3>{device.name}</h3>
@@ -371,6 +388,9 @@ const HomePage: React.FC = () => {
             <p><strong>Trạng thái:</strong> {getStatusTag(selectedDevice.status)}</p>
             <p><strong>Vị trí:</strong> {selectedDevice.location}</p>
             <p><strong>Mô tả:</strong> {selectedDevice.description || 'Không có mô tả'}</p>
+            <Button type="primary" block style={{ marginTop: 20 }} onClick={() => history.push(`/borrow/${selectedDevice.id}`)}>
+              Mượn ngay
+            </Button>
           </Card>
         )}
       </Modal>

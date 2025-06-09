@@ -282,6 +282,30 @@
           }
         }
       }
+
+      .device-image-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f2f5;
+
+        .device-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .device-icon-placeholder {
+          font-size: 40px;
+          color: #1890ff;
+        }
+      }
     }
 
     .view-all-button {

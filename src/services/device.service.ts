@@ -38,8 +38,20 @@ export interface DeviceStatistics {
 }
 
 export const getDevices = async (params: DeviceListParams = {}): Promise<DeviceListResponse> => {
-  const response = await axios.get('/user/devices', { params });
-  return response.data;
+  const axiosResponse = await axios.get('/user/devices', { params });
+  const data: Device[] = Array.isArray(axiosResponse.data) ? axiosResponse.data : [];
+
+  // Mock pagination details as backend seems to return just an array of devices
+  const total = data.length;
+  const current = params.current || 1;
+  const pageSize = params.pageSize || 10;
+
+  return {
+    data: data,
+    current: current,
+    pageSize: pageSize,
+    total: total,
+  };
 };
 
 export const getDeviceById = async (id: string): Promise<Device> => {

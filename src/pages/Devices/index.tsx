@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from 'antd';
 import {
   Card,
-  Table,
   Tag,
   Space,
   Button,
@@ -13,6 +12,10 @@ import {
   Select,
   InputNumber,
   message,
+  Row,
+  Col,
+  Pagination,
+  Spin,
 } from 'antd';
 import {
   PlusOutlined,
@@ -21,8 +24,13 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined,
+  SearchOutlined,
+  LaptopOutlined,
+  CameraOutlined,
+  AudioOutlined,
+  VideoCameraOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
 import {
   getDevices,
   createDevice,
@@ -32,6 +40,7 @@ import {
   DeviceListParams,
   DeviceListResponse,
 } from '@/services/device.service';
+import { history } from 'umi';
 
 // Create a simple styles object instead of importing
 const styles = {
@@ -42,9 +51,10 @@ const styles = {
   }
 };
 
-const { Title } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 const { Content } = Layout;
+const { Search } = Input;
 
 const DevicesPage: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
@@ -57,6 +67,20 @@ const DevicesPage: React.FC = () => {
     pageSize: 10,
     total: 0,
   });
+  const [searchText, setSearchText] = useState('');
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    // Set isMounted to true when component mounts
+    isMounted.current = true;
+
+    // Cleanup function
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const fetchDevices = async (params: DeviceListParams = {}) => {
     try {
@@ -64,32 +88,65 @@ const DevicesPage: React.FC = () => {
       const response: DeviceListResponse = await getDevices({
         current: params.current || pagination.current,
         pageSize: params.pageSize || pagination.pageSize,
-        keyword: params.keyword,
+        keyword: params.keyword || searchText,
       });
       console.log('API Response for Devices Page:', response);
-      setDevices(response.data);
-      setPagination({
-        current: response.current,
-        pageSize: response.pageSize,
-        total: response.total,
-      });
+
+      // Only update state if component is still mounted
+      if (isMounted.current) {
+        // Ensure response.data is an array
+        const devicesData = Array.isArray(response.data) ? response.data : [];
+
+        // Ensure all required fields are present and have default values
+        const processedDevices = devicesData.map(device => ({
+          id: device.id || '',
+          name: device.name || 'Không có tên',
+          serialNumber: device.serialNumber || 'Không có mã số',
+          category: device.category || 'Other',
+          status: device.status || 'available',
+          quantity: typeof device.quantity === 'number' ? device.quantity : 0,
+          location: device.location || 'Không có vị trí',
+          description: device.description || 'Không có mô tả',
+          imageUrl: device.imageUrl || '',
+          rating: typeof device.rating === 'number' ? device.rating : 0,
+          borrowCount: typeof device.borrowCount === 'number' ? device.borrowCount : 0,
+          createdAt: device.createdAt || new Date().toISOString(),
+          updatedAt: device.updatedAt || new Date().toISOString(),
+        }));
+
+        console.log('Processed Devices before setting state:', processedDevices);
+        setDevices(processedDevices);
+        setPagination({
+          current: typeof response.current === 'number' ? response.current : 1,
+          pageSize: typeof response.pageSize === 'number' ? response.pageSize : 10,
+          total: typeof response.total === 'number' ? response.total : 0,
+        });
+      }
     } catch (error) {
       console.error('Error fetching devices:', error);
-      message.error('Không thể tải danh sách thiết bị');
+      if (isMounted.current) {
+        message.error('Không thể tải danh sách thiết bị');
+        setDevices([]);
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchDevices();
-  }, []);
+  }, [searchText]);
 
-  const handleTableChange = (pagination: any) => {
-    fetchDevices({
-      current: pagination.current,
-      pageSize: pagination.pageSize,
-    });
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    setPagination(prev => ({ ...prev, current: 1 }));
+  };
+
+  const handlePageChange = (page: number, pageSize?: number) => {
+    setPagination(prev => ({ ...prev, current: page, pageSize: pageSize || prev.pageSize }));
+    fetchDevices({ current: page, pageSize: pageSize || pagination.pageSize, keyword: searchText });
   };
 
   const getStatusTag = (status: string) => {
@@ -109,205 +166,103 @@ const DevicesPage: React.FC = () => {
     }
   };
 
-  const handleAdd = () => {
-    setEditingDevice(null);
-    form.resetFields();
-    setIsModalVisible(true);
+  const handleViewDetail = (device: Device) => {
+    setSelectedDevice(device);
+    setIsDetailModalVisible(true);
   };
 
-  const handleEdit = (record: Device) => {
-    setEditingDevice(record);
-    form.setFieldsValue(record);
-    setIsModalVisible(true);
-  };
-
-  const handleDelete = (id: string) => {
-    Modal.confirm({
-      title: 'Xác nhận xóa',
-      content: 'Bạn có chắc chắn muốn xóa thiết bị này?',
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await deleteDevice(id);
-          message.success('Đã xóa thiết bị thành công');
-          fetchDevices(); // Refresh list
-        } catch (error) {
-          console.error('Error deleting device:', error);
-          message.error('Xóa thiết bị thất bại');
-        }
-      },
-    });
-  };
-
-  const handleModalOk = async () => {
-    try {
-      const values = await form.validateFields();
-      if (editingDevice) {
-        // Update existing device
-        await updateDevice(editingDevice.id, values);
-        message.success('Cập nhật thiết bị thành công');
-      } else {
-        // Add new device
-        await createDevice(values);
-        message.success('Thêm thiết bị thành công');
-      }
-      setIsModalVisible(false);
-      fetchDevices(); // Refresh list
-    } catch (error) {
-      console.error('Validation failed:', error);
-      message.error('Vui lòng điền đầy đủ thông tin');
-    }
-  };
-
-  const columns: ColumnsType<Device> = [
-    {
-      title: 'Tên thiết bị',
-      dataIndex: 'name',
-      key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name),
-    },
-    {
-      title: 'Mã số',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
-    },
-    {
-      title: 'Danh mục',
-      dataIndex: 'category',
-      key: 'category',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => getStatusTag(status),
-      filters: [
-        { text: 'Sẵn sàng', value: 'available' },
-        { text: 'Đang mượn', value: 'borrowed' },
-        { text: 'Bảo trì', value: 'maintenance' },
-        { text: 'Hỏng', value: 'broken' },
-      ],
-      onFilter: (value, record) => record.status === value,
-    },
-    {
-      title: 'Số lượng',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      sorter: (a: Device, b: Device) => a.quantity - b.quantity,
-    },
-    {
-      title: 'Vị trí',
-      dataIndex: 'location',
-      key: 'location',
-    },
-  ];
+  console.log('Current pagination state:', pagination);
 
   return (
     <Content style={styles.content}>
       <Card>
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Title level={2}>Quản lý thiết bị</Title>
-          {/* <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
-            Thêm thiết bị
-          </Button> */}
+          <Search
+            placeholder="Tìm kiếm thiết bị..."
+            enterButton
+            onSearch={handleSearch}
+            style={{ width: 300 }}
+          />
         </div>
 
-        <Table
-          columns={columns}
-          dataSource={devices}
-          loading={loading}
-          rowKey="id"
-          pagination={pagination}
-          onChange={handleTableChange}
+        <Spin spinning={loading}>
+          {(!devices || devices.length === 0) && !loading ? (
+            <Paragraph>Không tìm thấy thiết bị nào.</Paragraph>
+          ) : (
+            <Row gutter={[24, 24]}>
+              {devices?.map((device) => (
+                <Col xs={24} sm={12} md={8} lg={6} xl={6} key={device.id}>
+                  <Card
+                    hoverable
+                    className="device-card"
+                    onClick={() => handleViewDetail(device)}
+                  >
+                    <div className="device-card-content">
+                      <div className="device-image-wrapper">
+                        {device.imageUrl ? (
+                          <img src={device.imageUrl} alt={device.name} className="device-image" />
+                        ) : (
+                          <div className="device-icon-placeholder">
+                            {device.category === 'Laptop' && <LaptopOutlined />}
+                            {device.category === 'Camera' && <CameraOutlined />}
+                            {device.category === 'Projector' && <VideoCameraOutlined />}
+                            {device.category === 'Microphone' && <AudioOutlined />}
+                            {device.category === 'Monitor' && <AppstoreOutlined />}
+                            {device.category === 'Other' && <AppstoreOutlined />}
+                            {!device.category && <AppstoreOutlined />}
+                          </div>
+                        )}
+                      </div>
+                      <div className="device-info">
+                        <h3>{device.name}</h3>
+                        <Paragraph className="device-description">{device.description || 'Không có mô tả'}</Paragraph>
+                        <div className="device-stats">
+                          {getStatusTag(device.status)}
+                          <Tag color="blue">SL: {device.quantity}</Tag>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
+        </Spin>
+
+        <Pagination
+          current={typeof pagination.current === 'number' ? pagination.current : 1}
+          pageSize={typeof pagination.pageSize === 'number' ? pagination.pageSize : 10}
+          total={typeof pagination.total === 'number' ? pagination.total : 0}
+          onChange={handlePageChange}
+          showSizeChanger
+          style={{ marginTop: 24, textAlign: 'right' }}
         />
 
-        {/* <Modal
-          title={editingDevice ? 'Sửa thiết bị' : 'Thêm thiết bị mới'}
-          visible={isModalVisible}
-          onOk={handleModalOk}
-          onCancel={() => setIsModalVisible(false)}
-          width={600}
-        >
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={{ status: 'available', quantity: 1, location: '' }}
-          >
-            <Form.Item
-              name="name"
-              label="Tên thiết bị"
-              rules={[{ required: true, message: 'Vui lòng nhập tên thiết bị' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="serialNumber"
-              label="Mã số"
-              rules={[{ required: true, message: 'Vui lòng nhập mã số thiết bị' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="category"
-              label="Danh mục"
-              rules={[{ required: true, message: 'Vui lòng chọn danh mục thiết bị' }]}
-            >
-              <Select>
-                <Option value="Laptop">Laptop</Option>
-                <Option value="Projector">Máy chiếu</Option>
-                <Option value="Monitor">Màn hình</Option>
-                <Option value="Camera">Camera</Option>
-                <Option value="Microphone">Microphone</Option>
-                <Option value="Other">Khác</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              name="status"
-              label="Trạng thái"
-              rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
-            >
-              <Select>
-                <Option value="available">Sẵn sàng</Option>
-                <Option value="borrowed">Đang mượn</Option>
-                <Option value="maintenance">Bảo trì</Option>
-                <Option value="broken">Hỏng</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              name="quantity"
-              label="Số lượng"
-              rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
-            >
-              <InputNumber min={0} style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item
-              name="location"
-              label="Vị trí"
-              rules={[{ required: true, message: 'Vui lòng nhập vị trí' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="description"
-              label="Mô tả"
-            >
-              <Input.TextArea rows={4} />
-            </Form.Item>
-          </Form>
-        </Modal> */}
       </Card>
+
+      <Modal
+        title="Chi tiết thiết bị"
+        open={isDetailModalVisible}
+        onCancel={() => setIsDetailModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        {selectedDevice && (
+          <Card>
+            <p><strong>Tên thiết bị:</strong> {selectedDevice.name}</p>
+            <p><strong>Mã số:</strong> {selectedDevice.serialNumber}</p>
+            <p><strong>Danh mục:</strong> {selectedDevice.category}</p>
+            <p><strong>Trạng thái:</strong> {getStatusTag(selectedDevice.status)}</p>
+            <p><strong>Vị trí:</strong> {selectedDevice.location}</p>
+            <p><strong>Mô tả:</strong> {selectedDevice.description || 'Không có mô tả'}</p>
+            <p><strong>Số lượng:</strong> {selectedDevice.quantity}</p>
+            <Button type="primary" block style={{ marginTop: 20 }} onClick={() => history.push(`/borrow/${selectedDevice.id}`)}>
+              Mượn ngay
+            </Button>
+          </Card>
+        )}
+      </Modal>
     </Content>
   );
 };
