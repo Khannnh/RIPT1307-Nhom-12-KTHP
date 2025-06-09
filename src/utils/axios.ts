@@ -11,7 +11,7 @@ import data from './data';
 //   // });
 //   // localStorage.clear();
 //   history.replace({
-//     pathname: '/user/login',
+//     pathname: '/api/user/login',
 //   });
 // }
 

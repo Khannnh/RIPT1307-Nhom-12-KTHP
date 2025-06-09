@@ -6,16 +6,13 @@ import './DeviceStatisticsPage.less';
 import ColumnChart from '@/components/Chart/ColumnChart';
 import DonutChart from '@/components/Chart/DonutChart';
 
-
-
-
-// Dữ liệu mẫu (thay thế bằng dữ liệu thực tế từ API của bạn)
-const mockHeroData = {
-  totalBorrows: 897,
-  popularDevice: 'Laptop',
-  popularDeviceBorrows: 180,
-  uniqueDeviceTypes: 4,
-};
+// // Dữ liệu mẫu (thay thế bằng dữ liệu thực tế từ API của bạn)
+// const mockHeroData = {
+//   totalBorrows: 897,
+//   popularDevice: 'Laptop',
+//   popularDeviceBorrows: 180,
+//   uniqueDeviceTypes: 4,
+// };
 
 // Định dạng dữ liệu cho ColumnChart và DonutChart theo DataChartType
 const mockColumnChartData = {
@@ -48,10 +45,9 @@ const DeviceStatisticsPage: React.FC = () => {
       <h1 className="page-title">Thống Kê Thiết Bị</h1>
       <p className="page-subtitle">Theo dõi và phân tích thiết bị được mượn nhiều nhất theo tuần, tháng và năm</p>
     <HeroSection
-        totalBorrows={mockHeroData.totalBorrows}
-        popularDevice={mockHeroData.popularDevice}
-        popularDeviceBorrows={mockHeroData.popularDeviceBorrows}
-        uniqueDeviceTypes={mockHeroData.uniqueDeviceTypes}
+        popularDevice="Laptop Dell XPS 13"
+        popularDeviceBorrows={180}
+        uniqueDeviceTypes={4}
       />
         <DeviceTable data={mockDeviceTableData} />
         <div className="charts-container">

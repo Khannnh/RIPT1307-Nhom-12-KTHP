@@ -27,5 +27,20 @@ export async function getThongKeData(params?: { type?: string; month?: number; y
   }
 }
 
-// Bạn có thể thêm các hàm gọi API khác ở đây nếu có các endpoint khác
-// export async function anotherApiCall(...): Promise<any> { ... }
+//hàm thống kê tổng lượt mượn
+export async function getTotalBorrowRequests(): Promise<number> {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/admin/borrow-requests`);
+    if (Array.isArray(response.data)) {
+      return response.data.length;
+    }
+    // Nếu API trả về object có thuộc tính data là mảng
+    if (Array.isArray(response.data?.data)) {
+      return response.data.data.length;
+    }
+    return 0;
+  } catch (error) {
+    console.error('Error fetching total borrow requests:', error);
+    throw error;
+  }
+}

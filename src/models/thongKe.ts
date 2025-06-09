@@ -1,7 +1,5 @@
 
-/**
- * Interface cho dữ liệu thiết bị trong bảng thống kê.
- */
+
 export interface DeviceStatistic {
     id: string;
   key: string;
@@ -10,14 +8,11 @@ export interface DeviceStatistic {
   category: string;
   borrowed: number;
   percentage: string;
-    borrowedCount: number; 
+  borrowedCount: number; 
     
   
 }
 
-/**
- * Interface cho dữ liệu tổng quan thống kê.
- */
 export interface ThongKeSummary {
   totalBorrowed: number;
   month: string;
@@ -26,9 +21,6 @@ export interface ThongKeSummary {
   deviceTypes: number;
 }
 
-/**
- * Interface cho phản hồi hoàn chỉnh từ API thống kê.
- */
 export interface ThongKeApiResponse {
   summary: ThongKeSummary;
   deviceList: DeviceStatistic[];
