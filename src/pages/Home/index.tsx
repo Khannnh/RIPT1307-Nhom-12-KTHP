@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Typography, Button, Input, Tag, Spin, Space, Modal } from 'antd';
+import { Card, Row, Col, Typography, Button, Input, Tag, Spin, Space, Modal, Form, DatePicker, Descriptions, message } from 'antd';
 import {
   RightOutlined,
   CameraOutlined,
@@ -24,14 +24,19 @@ import {
 import { Link, history } from 'umi';
 import './index.less';
 import { getDevices, Device } from '@/services/device.service';
+import { createBorrowRequest } from '@/services/borrow-request.service';
+import dayjs from 'dayjs';
 
 const { Title, Paragraph } = Typography;
+const { RangePicker } = DatePicker;
 
 const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [topDevices, setTopDevices] = useState<Device[]>([]);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [form] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchTopDevices = async () => {
@@ -86,6 +91,45 @@ const HomePage: React.FC = () => {
   const handleViewDetail = (device: Device) => {
     setSelectedDevice(device);
     setIsDetailModalVisible(true);
+  };
+
+  const handleBorrowSubmit = async (values: any) => {
+    if (!selectedDevice) return;
+
+    try {
+      setSubmitting(true);
+      const [borrowDate, returnDate] = values.dateRange;
+
+      // Validate dates
+      if (borrowDate.isAfter(returnDate)) {
+        message.error('Ngày trả phải sau ngày mượn');
+        return;
+      }
+
+      // Validate borrow duration (max 7 days)
+      const duration = returnDate.diff(borrowDate, 'day');
+      if (duration > 7) {
+        message.error('Thời gian mượn không được quá 7 ngày');
+        return;
+      }
+
+      await createBorrowRequest({
+        deviceId: selectedDevice._id || selectedDevice.id, // Handle both _id and id
+        borrowDate: borrowDate.format('YYYY-MM-DD'),
+        returnDate: returnDate.format('YYYY-MM-DD'),
+        purpose: values.purpose,
+      });
+
+      message.success('Gửi yêu cầu mượn thành công! Yêu cầu đang chờ duyệt.');
+      setIsDetailModalVisible(false);
+      form.resetFields();
+    } catch (error: any) {
+      console.error('Borrow request error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Không thể gửi yêu cầu mượn';
+      message.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -372,26 +416,112 @@ const HomePage: React.FC = () => {
         </div>
       </footer>
 
-      {/* Detail Modal for devices */}
+      {/* Detail Modal with Borrow Form */}
       <Modal
         title="Chi tiết thiết bị"
         open={isDetailModalVisible}
-        onCancel={() => setIsDetailModalVisible(false)}
+        onCancel={() => {
+          setIsDetailModalVisible(false);
+          form.resetFields();
+        }}
         footer={null}
-        width={700}
+        width={800}
+        destroyOnClose
       >
         {selectedDevice && (
-          <Card>
-            <p><strong>Tên thiết bị:</strong> {selectedDevice.name}</p>
-            <p><strong>Mã số:</strong> {selectedDevice.serialNumber}</p>
-            <p><strong>Danh mục:</strong> {selectedDevice.category}</p>
-            <p><strong>Trạng thái:</strong> {getStatusTag(selectedDevice.status)}</p>
-            <p><strong>Vị trí:</strong> {selectedDevice.location}</p>
-            <p><strong>Mô tả:</strong> {selectedDevice.description || 'Không có mô tả'}</p>
-            <Button type="primary" block style={{ marginTop: 20 }} onClick={() => history.push(`/borrow/${selectedDevice.id}`)}>
-              Mượn ngay
-            </Button>
-          </Card>
+          <div>
+            {/* Device Details Section */}
+            <Descriptions bordered column={2} style={{ marginBottom: 24 }}>
+              <Descriptions.Item label="Tên thiết bị" span={2}>
+                {selectedDevice.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mã số">
+                {selectedDevice.serialNumber}
+              </Descriptions.Item>
+              <Descriptions.Item label="Danh mục">
+                {selectedDevice.category}
+              </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">
+                {getStatusTag(selectedDevice.status)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Vị trí">
+                {selectedDevice.location}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả" span={2}>
+                {selectedDevice.description || 'Không có mô tả'}
+              </Descriptions.Item>
+            </Descriptions>
+
+            {/* Borrow Form Section */}
+            {selectedDevice.status === 'available' ? (
+              <div>
+                <Typography.Title level={4} style={{ marginBottom: 16 }}>
+                  Đăng ký mượn thiết bị
+                </Typography.Title>
+                <Form form={form} onFinish={handleBorrowSubmit} layout="vertical">
+                  <Form.Item
+                    label="Thời gian mượn"
+                    name="dateRange"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Vui lòng chọn thời gian mượn',
+                      },
+                    ]}
+                  >
+                    <RangePicker
+                      style={{ width: '100%' }}
+                      disabledDate={(current) => {
+                        return current && current < dayjs().startOf('day');
+                      }}
+                      placeholder={['Ngày mượn', 'Ngày trả']}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Mục đích sử dụng"
+                    name="purpose"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Vui lòng nhập mục đích sử dụng',
+                      },
+                      {
+                        min: 10,
+                        message: 'Mục đích sử dụng phải có ít nhất 10 ký tự',
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      rows={4}
+                      placeholder="Mô tả chi tiết mục đích sử dụng thiết bị..."
+                      showCount
+                      maxLength={500}
+                    />
+                  </Form.Item>
+
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      block
+                      loading={submitting}
+                      size="large"
+                      style={{ marginTop: 8 }}
+                    >
+                      Đăng ký mượn ngay
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <Typography.Text type="secondary">
+                  Thiết bị này hiện không khả dụng để mượn
+                </Typography.Text>
+              </div>
+            )}
+          </div>
         )}
       </Modal>
     </div>

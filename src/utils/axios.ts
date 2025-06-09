@@ -2,7 +2,7 @@
 import { message, notification } from 'antd';
 import axios from 'axios';
 import { history } from 'umi';
-import data from './data';
+import data from '@/locales/vi-VN';
 
 // function routeLogin(errorCode: string) {
 //   // notification.warning({
@@ -74,21 +74,47 @@ instance.interceptors.response.use(
 	(response) => response,
 	(error) => {
 		const er = error?.response?.data;
-		const descriptionError = Array.isArray(er?.detail?.exception?.response?.message)
-			? er?.detail?.exception?.response?.message?.join(', ')
-			: Array.isArray(er?.detail?.exception?.errors)
-			? er?.detail?.exception?.errors?.map((e: any) => e?.message)?.join(', ')
-			: data.error[er?.detail?.errorCode || er?.errorCode] ||
-			  er?.detail?.message ||
-			  er?.message ||
-			  er?.errorDescription;
+
+		// Safely access nested properties with fallbacks
+		let descriptionError = 'Có lỗi xảy ra';
+
+		try {
+			if (er?.detail?.exception?.response?.message && Array.isArray(er.detail.exception.response.message)) {
+				descriptionError = er.detail.exception.response.message.join(', ');
+			} else if (er?.detail?.exception?.errors && Array.isArray(er.detail.exception.errors)) {
+				descriptionError = er.detail.exception.errors.map((e: any) => e?.message || 'Lỗi không xác định').join(', ');
+			} else if (er?.detail?.errorCode && data?.error?.[er.detail.errorCode]) {
+				descriptionError = data.error[er.detail.errorCode];
+			} else if (er?.errorCode && data?.error?.[er.errorCode]) {
+				descriptionError = data.error[er.errorCode];
+			} else if (er?.detail?.message) {
+				descriptionError = er.detail.message;
+			} else if (er?.message) {
+				descriptionError = er.message;
+			} else if (er?.errorDescription) {
+				descriptionError = er.errorDescription;
+			}
+		} catch (parseError) {
+			console.error('Error parsing error response:', parseError);
+			descriptionError = 'Có lỗi xảy ra khi xử lý phản hồi từ server';
+		}
 
 		const originalRequest = error.config;
-		let originData = originalRequest?.data;
-		if (typeof originData === 'string') originData = JSON.parse(originData);
+		let originData = null;
+
+		try {
+			originData = originalRequest?.data;
+			if (typeof originData === 'string') {
+				originData = JSON.parse(originData);
+			}
+		} catch (parseError) {
+			console.error('Error parsing request data:', parseError);
+		}
 
 		// Chỉ hiển thị thông báo lỗi nếu không phải là request silent
-		if (typeof originData !== 'object' || !Object.keys(originData ?? {}).includes('silent') || !originData?.silent) {
+		const shouldShowNotification = !originData?.silent;
+
+		if (shouldShowNotification) {
 			switch (error?.response?.status) {
 				case 400:
 					notification.error({

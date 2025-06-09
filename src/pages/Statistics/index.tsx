@@ -1,5 +1,5 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, DatePicker, Descriptions, Form, Input, Modal, Table, Tag, message } from 'antd';
+import { Button, Card, DatePicker, Descriptions, Form, Input, Modal, Table, Tag, message, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getDevices, Device, DeviceListResponse, getDeviceById } from '@/services/device.service';
 import { createBorrowRequest } from '@/services/borrow-request.service';
@@ -103,8 +103,8 @@ const DeviceList: React.FC = () => {
         purpose: values.purpose,
       });
 
-      message.success('Gửi yêu cầu mượn thành công');
-      setBorrowModalVisible(false);
+      message.success('Gửi yêu cầu mượn thành công! Yêu cầu đang chờ duyệt.');
+      setDetailModalVisible(false);
       form.resetFields();
       fetchDevices(); // Refresh device list
     } catch (error: any) {
@@ -210,125 +210,121 @@ const DeviceList: React.FC = () => {
         />
       </Card>
 
-      {/* Detail Modal */}
+      {/* Detail Modal with Borrow Form */}
       <Modal
         title="Chi tiết thiết bị"
         visible={detailModalVisible}
-        onCancel={() => setDetailModalVisible(false)}
-        footer={null}
-        width={700}
-      >
-        {selectedDevice && (
-          <Descriptions bordered column={2}>
-            <Descriptions.Item label="Tên thiết bị" span={2}>
-              {selectedDevice.name}
-            </Descriptions.Item>
-            <Descriptions.Item label="Mã số">
-              {selectedDevice.serialNumber}
-            </Descriptions.Item>
-            <Descriptions.Item label="Danh mục">
-              {selectedDevice.category}
-            </Descriptions.Item>
-            <Descriptions.Item label="Tình trạng">
-              <Tag color={getStatusColor(selectedDevice.status)}>
-                {getStatusText(selectedDevice.status)}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Vị trí">
-              {selectedDevice.location}
-            </Descriptions.Item>
-            <Descriptions.Item label="Mô tả" span={2}>
-              {selectedDevice.description || 'Không có mô tả'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">
-              {dayjs(selectedDevice.createdAt).format('DD/MM/YYYY HH:mm')}
-            </Descriptions.Item>
-            <Descriptions.Item label="Cập nhật lần cuối">
-              {dayjs(selectedDevice.updatedAt).format('DD/MM/YYYY HH:mm')}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
-
-      {/* Borrow Modal */}
-      <Modal
-        title="Gửi yêu cầu mượn thiết bị"
-        visible={borrowModalVisible}
         onCancel={() => {
-          setBorrowModalVisible(false);
+          setDetailModalVisible(false);
           form.resetFields();
         }}
         footer={null}
+        width={800}
         destroyOnClose
       >
-        <Form form={form} onFinish={handleBorrowSubmit} layout="vertical">
-          <Form.Item
-            label="Thiết bị"
-            name="device"
-          >
-            <Input disabled />
-          </Form.Item>
+        {selectedDevice && (
+          <div>
+            {/* Device Details Section */}
+            <Descriptions bordered column={2} style={{ marginBottom: 24 }}>
+              <Descriptions.Item label="Tên thiết bị" span={2}>
+                {selectedDevice.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mã số">
+                {selectedDevice.serialNumber}
+              </Descriptions.Item>
+              <Descriptions.Item label="Danh mục">
+                {selectedDevice.category}
+              </Descriptions.Item>
+              <Descriptions.Item label="Tình trạng">
+                <Tag color={getStatusColor(selectedDevice.status)}>
+                  {getStatusText(selectedDevice.status)}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Vị trí">
+                {selectedDevice.location}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả" span={2}>
+                {selectedDevice.description || 'Không có mô tả'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày tạo">
+                {dayjs(selectedDevice.createdAt).format('DD/MM/YYYY HH:mm')}
+              </Descriptions.Item>
+              <Descriptions.Item label="Cập nhật lần cuối">
+                {dayjs(selectedDevice.updatedAt).format('DD/MM/YYYY HH:mm')}
+              </Descriptions.Item>
+            </Descriptions>
 
-          <Form.Item
-            label="Mã số"
-            name="serialNumber"
-          >
-            <Input disabled />
-          </Form.Item>
+            {/* Borrow Form Section */}
+            {selectedDevice.status === 'available' ? (
+              <div>
+                <Typography.Title level={4} style={{ marginBottom: 16 }}>
+                  Đăng ký mượn thiết bị
+                </Typography.Title>
+                <Form form={form} onFinish={handleBorrowSubmit} layout="vertical">
+                  <Form.Item
+                    label="Thời gian mượn"
+                    name="dateRange"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Vui lòng chọn thời gian mượn',
+                      },
+                    ]}
+                  >
+                    <RangePicker
+                      style={{ width: '100%' }}
+                      disabledDate={(current) => {
+                        return current && current < dayjs().startOf('day');
+                      }}
+                      placeholder={['Ngày mượn', 'Ngày trả']}
+                    />
+                  </Form.Item>
 
-          <Form.Item
-            label="Danh mục"
-            name="category"
-          >
-            <Input disabled />
-          </Form.Item>
+                  <Form.Item
+                    label="Mục đích sử dụng"
+                    name="purpose"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Vui lòng nhập mục đích sử dụng',
+                      },
+                      {
+                        min: 10,
+                        message: 'Mục đích sử dụng phải có ít nhất 10 ký tự',
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      rows={4}
+                      placeholder="Mô tả chi tiết mục đích sử dụng thiết bị..."
+                      showCount
+                      maxLength={500}
+                    />
+                  </Form.Item>
 
-          <Form.Item
-            label="Thời gian mượn"
-            name="dateRange"
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng chọn thời gian mượn',
-              },
-            ]}
-          >
-            <RangePicker
-              style={{ width: '100%' }}
-              disabledDate={(current) => {
-                return current && current < dayjs().startOf('day');
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Mục đích sử dụng"
-            name="purpose"
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng nhập mục đích sử dụng',
-              },
-              {
-                min: 10,
-                message: 'Mục đích sử dụng phải có ít nhất 10 ký tự',
-              },
-            ]}
-          >
-            <Input.TextArea rows={4} placeholder="Mô tả chi tiết mục đích sử dụng thiết bị" />
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              loading={submitting}
-            >
-              Gửi yêu cầu
-            </Button>
-          </Form.Item>
-        </Form>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      block
+                      loading={submitting}
+                      size="large"
+                      style={{ marginTop: 8 }}
+                    >
+                      Đăng ký mượn ngay
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <Typography.Text type="secondary">
+                  Thiết bị này hiện không khả dụng để mượn
+                </Typography.Text>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </PageContainer>
   );

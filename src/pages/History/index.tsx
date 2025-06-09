@@ -1,42 +1,14 @@
-import React from 'react';
-import { Table, Tag, Space, Typography, Card, Layout } from 'antd';
-import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Table, Tag, Space, Typography, Card, Layout, Button, message } from 'antd';
+import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageContainer } from '@ant-design/pro-layout';
+import { getBorrowRequests, cancelBorrowRequest, type BorrowRequest } from '@/services/borrow-request.service';
+import dayjs from 'dayjs';
 import styles from './index.less';
 
 const { Title } = Typography;
 const { Content } = Layout;
-
-interface HistoryItem {
-  key: string;
-  deviceName: string;
-  borrowDate: string;
-  returnDate: string;
-  status: 'pending' | 'approved' | 'rejected' | 'returned';
-  requestId: string;
-}
-
-// Mock data for history
-const mockData: HistoryItem[] = [
-  {
-    key: '1',
-    deviceName: 'Laptop Dell XPS 13',
-    borrowDate: '2024-03-15 09:00',
-    returnDate: '2024-03-16 17:00',
-    status: 'returned',
-    requestId: 'REQ001',
-  },
-  {
-    key: '2',
-    deviceName: 'Máy chiếu Epson',
-    borrowDate: '2024-03-20 13:00',
-    returnDate: '2024-03-21 17:00',
-    status: 'pending',
-    requestId: 'REQ002',
-  },
-  // Add more history items as needed
-];
 
 const getStatusTag = (status: string) => {
   switch (status) {
@@ -54,16 +26,68 @@ const getStatusTag = (status: string) => {
 };
 
 const HistoryPage: React.FC = () => {
-  const columns: ColumnsType<HistoryItem> = [
+  const [data, setData] = useState<BorrowRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+
+  const fetchBorrowRequests = async (params: any = {}) => {
+    try {
+      setLoading(true);
+      const response = await getBorrowRequests({
+        current: params.current || pagination.current,
+        pageSize: params.pageSize || pagination.pageSize,
+      });
+
+      setData(response.data);
+      setPagination({
+        current: response.current,
+        pageSize: response.pageSize,
+        total: response.total,
+      });
+    } catch (error) {
+      console.error('Error fetching borrow requests:', error);
+      message.error('Không thể tải lịch sử mượn thiết bị');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBorrowRequests();
+  }, []);
+
+  const handleTableChange = (paginationParams: any) => {
+    fetchBorrowRequests({
+      current: paginationParams.current,
+      pageSize: paginationParams.pageSize,
+    });
+  };
+
+  const handleCancel = async (id: string) => {
+    try {
+      await cancelBorrowRequest(id);
+      message.success('Hủy yêu cầu thành công');
+      fetchBorrowRequests();
+    } catch (error) {
+      message.error('Không thể hủy yêu cầu');
+    }
+  };
+
+  const columns: ColumnsType<BorrowRequest> = [
     {
       title: 'Mã yêu cầu',
-      dataIndex: 'requestId',
-      key: 'requestId',
+      dataIndex: 'id',
+      key: 'id',
       width: 120,
+      render: (id: string) => id.substring(0, 8),
     },
     {
       title: 'Tên thiết bị',
-      dataIndex: 'deviceName',
+      dataIndex: ['device', 'name'],
       key: 'deviceName',
       width: 200,
     },
@@ -72,12 +96,14 @@ const HistoryPage: React.FC = () => {
       dataIndex: 'borrowDate',
       key: 'borrowDate',
       width: 150,
+      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
       title: 'Ngày trả',
       dataIndex: 'returnDate',
       key: 'returnDate',
       width: 150,
+      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
       title: 'Trạng thái',
@@ -85,6 +111,25 @@ const HistoryPage: React.FC = () => {
       key: 'status',
       width: 150,
       render: (status: string) => getStatusTag(status),
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      width: 100,
+      render: (_: any, record: BorrowRequest) => (
+        <Space>
+          {record.status === 'pending' && (
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleCancel(record.id)}
+            >
+              Hủy
+            </Button>
+          )}
+        </Space>
+      ),
     },
   ];
 
@@ -96,13 +141,16 @@ const HistoryPage: React.FC = () => {
             <Title level={2} className={styles.title}>Lịch sử mượn thiết bị</Title>
             <Table
               columns={columns}
-              dataSource={mockData}
+              dataSource={data}
+              loading={loading}
+              rowKey="id"
               className={styles.table}
               pagination={{
-                pageSize: 10,
+                ...pagination,
                 showSizeChanger: true,
                 showTotal: (total) => `Tổng số ${total} bản ghi`,
               }}
+              onChange={handleTableChange}
               scroll={{ x: 'max-content' }}
             />
           </Card>
