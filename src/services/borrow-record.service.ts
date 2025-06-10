@@ -22,7 +22,7 @@ const borrowRecordService = {
     return response.data;
   },
 
-  // Admin only
+  // Admin 
   getAllBorrowRecords: async () => {
     const response = await axios.get('admin/borrow-requests');
     return response.data.data;
@@ -31,6 +31,12 @@ const borrowRecordService = {
   recordDeviceReturn: async (id: number, notes?: string) => {
     const response = await axios.put(`/admin/borrow-records/${id}/return`, { notes });
     return response.data;
+  },
+
+  // Lấy danh sách thiết bị được mượn nhiều nhất (admin)
+  getTopBorrowedDevices: async () => {
+    const response = await axios.get('/admin/stats/top-borrowed');
+    return response.data.data; // trả về mảng thiết bị
   },
 };
 
