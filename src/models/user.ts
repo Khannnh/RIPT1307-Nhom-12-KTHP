@@ -50,74 +50,100 @@ const UserModel: UserModelType = {
     },
 
     *loginUnified({ payload }, { call, put }): Generator<any, any, any> {
-  // Thử đăng nhập với tư cách admin trước
-  try {
-    const adminResponse = yield call(loginAdmin, payload);
+    // Thử đăng nhập với tư cách admin trước
+    try {
+        console.log('Attempting admin login with payload:', payload);
+        const adminResponse = yield call(loginAdmin, payload);
+        console.log('Raw adminResponse from loginAdmin service (after calling loginAdmin):', adminResponse);
 
-    // Kiểm tra dữ liệu response chính xác
-    if (adminResponse?.data?.data.access_token) {
-      console.log('Admin login response:', adminResponse.data.data);
+        // *** ĐIỀU CHỈNH CÁCH TRUY CẬP DATA TẠI ĐÂY ***
+        // Dựa vào ảnh Postman và logic thông thường, token sẽ nằm trong adminResponse.data.data.access_token
+        // hoặc adminResponse.data.access_token tùy cách middleware xử lý.
+        // NHƯNG CONSOLE LOG CỦA BẠN LẠI HIỆN data: {} nhưng LẠI CÓ DÒNG ADMIN LOGIN SUCCESSFUL. RESPONSE DATA: ...
+        // Điều này gợi ý rằng data đã được "unwrap" ở đâu đó HOẶC cấu trúc có thể là data.access_token
+        // Chúng ta sẽ thử truy cập theo cách Postman hiển thị: response.data.data.access_token
+        // hoặc nếu không được thì là response.data.access_token
 
-      // Lưu token và thông tin người dùng
-      localStorage.setItem('token', adminResponse.data.data.access_token);
-      localStorage.setItem('user', JSON.stringify(adminResponse.data.data.user || {}));
-      localStorage.setItem('role', 'admin');
+        // Vì bạn thấy "Admin login successful. Response data: {access_token: '...'}"
+        // điều này có nghĩa là response mà bạn đang put vào log đó đã có access_token.
+        // Có thể nó là adminResponse.data.data trực tiếp, hoặc một biến tạm nào đó.
 
-      // Cập nhật state trong store
-      yield put({
-        type: 'saveCurrentUser',
-        payload: adminResponse.data.data.user || {},
-      });
-      yield put({
-        type: 'saveToken',
-        payload: adminResponse.data.data.access_token,
-      });
-      yield put({
-        type: 'saveRole',
-        payload: 'admin',
-      });
+        // THAY ĐỔI CÁCH TRUY CẬP ĐỂ ĐẢM BẢO LẤY ĐÚNG ACCESS_TOKEN VÀ USER
+        // Dựa vào dòng "Admin login successful. Response data: {access_token: '...'}" trong console của bạn
+        // Có vẻ như nó đang log từ một biến `response.data.data` (nếu model có `response.data.data`)
+        // HOẶC có thể là `response.data` nếu `data` kia là field rỗng
 
-      return { ...adminResponse.data.data, role: 'admin' };
+        // CÁCH 1: Giả sử DVA model đã "unwrap" giúp và `adminResponse.data` CHÍNH LÀ data mà Postman trả về
+        // (tức là adminResponse.data là { message: "...", data: { access_token: "..." } })
+        // Nếu vậy, bạn cần truy cập adminResponse.data.data.access_token
+
+        // CÁCH 2: Nếu console log "Raw adminResponse from loginAdmin service:" là đúng, và `adminResponse.data.data` là rỗng,
+        // thì có lẽ `access_token` và `user` nằm trực tiếp trong `adminResponse.data`.
+        // Dựa vào ảnh Postman, đó là {"message": "Đăng nhập thành công", "data": {"access_token": "...", ...}}.
+        // VẬY, adminResponse.data.data.access_token là ĐÚNG theo Postman.
+        // NHƯNG console lại nói data: {}
+
+        // => Khả năng cao nhất là: Cấu trúc của `adminResponse` sau `yield call(loginAdmin, payload);`
+        // KHÔNG GIỐNG HỆT với `response` từ Postman, hoặc `axios` đã bọc thêm một lớp.
+
+        // HÃY THỬ CÁCH NÀY, dựa vào dòng "Admin login successful. Response data: {access_token: '...', ...}"
+        // => Điều này có nghĩa là biến mà bạn đang log ở dòng 60 đã có access_token.
+        // Biến đó phải là `adminResponse.data.data` (nếu cấu trúc là data.data)
+        // hoặc `adminResponse.data` (nếu cấu trúc là data).
+
+        // Để an toàn, hãy thử kiểm tra cả hai khả năng:
+        const responseData = adminResponse?.data?.data || adminResponse?.data; // Ưu tiên data.data, nếu không có thì thử data
+
+        if (responseData?.access_token) { // Kiểm tra access_token trong responseData đã được "unwrap"
+            console.log('Admin login successful. Final data being processed:', responseData);
+            const accessToken = responseData.access_token;
+            const user = responseData.user || {}; // Giả sử user info nằm trong responseData.user
+            const role = 'admin'; // Hoặc responseData.role nếu backend trả về
+
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('role', role);
+
+            yield put({ type: 'saveCurrentUser', payload: user });
+            yield put({ type: 'saveToken', payload: accessToken });
+            yield put({ type: 'saveRole', payload: role });
+
+            return { ...responseData, role: role };
+        } else {
+            console.log('Admin login failed: No access_token in responseData or condition not met.', responseData);
+        }
+    } catch (error: any) {
+        console.log('Admin login error caught in effect:', error?.response?.data || error.message);
     }
-  } catch (error: any) {
-    console.log('Admin login error:', error?.response?.data.data || error.message);
-  }
 
-  // Thử đăng nhập với tư cách user thường
-  try {
-    const userResponse = yield call(loginUser, payload);
+    // Thử đăng nhập với tư cách user thường (kiểm tra và sửa tương tự nếu cần)
+    try {
+      const userResponse = yield call(loginUser, payload);
+      const userData = userResponse?.data?.data || userResponse?.data; // Tương tự cho user login
 
-    // Kiểm tra dữ liệu response chính xác
-    if (userResponse?.data?.data.access_token) {
-      console.log('User login response:', userResponse.data.data);
+      if (userData?.access_token) {
+        console.log('User login successful. Final data being processed:', userData);
+        const accessToken = userData.access_token;
+        const user = userData.user || {};
+        const role = 'user';
 
-      // Lưu token và thông tin người dùng
-      localStorage.setItem('token', userResponse.data.data.access_token);
-      localStorage.setItem('user', JSON.stringify(userResponse.data.data.user || {}));
-      localStorage.setItem('role', 'user');
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('role', role);
 
-      // Cập nhật state trong store
-      yield put({
-        type: 'saveCurrentUser',
-        payload: userResponse.data.data.user || {},
-      });
-      yield put({
-        type: 'saveToken',
-        payload: userResponse.data.data.access_token,
-      });
-      yield put({
-        type: 'saveRole',
-        payload: 'user',
-      });
+        yield put({ type: 'saveCurrentUser', payload: user });
+        yield put({ type: 'saveToken', payload: accessToken });
+        yield put({ type: 'saveRole', payload: role });
 
-      return { ...userResponse.data.data, role: 'user' };
+        return { ...userData, role: role };
+      } else {
+          console.log('User login failed: No access_token in userData or condition not met.', userData);
+      }
+    } catch (error: any) {
+        console.log('User login error:', error?.response?.data || error.message);
     }
-  } catch (error: any) {
-    console.log('User login error:', error?.response?.data.data || error.message);
-  }
 
-  // Nếu cả hai đều thất bại, ném lỗi
-  throw new Error('Tài khoản hoặc mật khẩu không đúng!');
+    throw new Error('Tài khoản hoặc mật khẩu không đúng!');
 },
 
     *register({ payload }, { call }): Generator<any, any, any> {

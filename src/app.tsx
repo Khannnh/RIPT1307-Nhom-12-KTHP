@@ -13,8 +13,9 @@ import { OIDCBounder } from './components/OIDCBounder';
 import { unCheckPermissionPaths } from './components/OIDCBounder/constant';
 import OneSignalBounder from './components/OneSignalBounder';
 import TechnicalSupportBounder from './components/TechnicalSupportBounder';
-import NotAccessible from '../../TH/src/pages/exception/403';
-import NotFoundContent from '../../TH/src/pages/exception/404';
+// Update the path below to the correct location of your 403 component
+import NotAccessible from './pages/exception/403';
+import NotFoundContent from './pages/exception/404';
 import type { IInitialState } from './services/base/typing';
 import './styles/global.less';
 import { currentRole } from './utils/ip';
