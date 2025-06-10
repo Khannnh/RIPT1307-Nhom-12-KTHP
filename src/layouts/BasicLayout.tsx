@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Layout, Menu, Dropdown, Avatar, Space, Typography, Button, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Dropdown, Avatar, Space, Typography, Button, message, Drawer } from 'antd';
 import {
   HomeOutlined,
   AppstoreOutlined,
@@ -7,6 +7,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   SettingOutlined,
+  MenuOutlined, // Import icon cho nút mobile
 } from '@ant-design/icons';
 import { Link, useLocation, history } from 'umi';
 import styles from './BasicLayout.less';
@@ -21,6 +22,19 @@ const BasicLayout: React.FC = ({ children }) => {
     name: localStorage.getItem('userName') || 'User',
     avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
   });
+
+  // State để quản lý menu mobile
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Effect để theo dõi và cập nhật state khi thay đổi kích thước màn hình
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -76,22 +90,57 @@ const BasicLayout: React.FC = ({ children }) => {
             <span>Hệ thống mượn thiết bị</span>
           </Link>
         </div>
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[location.pathname]}
-          items={navItems}
-          className={styles.menu}
-        />
+
+        {/* --- Phần Menu được render có điều kiện --- */}
+        
+        {/* Nếu không phải mobile, render menu ngang cho desktop */}
+        {!isMobile && (
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            selectedKeys={[location.pathname]}
+            items={navItems}
+            className={styles.menu}
+          />
+        )}
+        
+        {/* --- Phần nội dung bên phải Header --- */}
         <div className={styles.userInfo}>
           <Dropdown overlay={userMenu} placement="bottomRight">
             <Space className={styles.userDropdown}>
               <Avatar src={currentUser.avatar} />
-              <Text style={{ color: 'white' }}>Xin chào, {currentUser.name}</Text>
+              {/* Chỉ hiển thị tên người dùng trên desktop */}
+              {!isMobile && <Text style={{ color: 'white' }}>Xin chào, {currentUser.name}</Text>}
             </Space>
           </Dropdown>
         </div>
+
+        {/* Nếu là mobile, render nút hamburger */}
+        {isMobile && (
+          <Button
+            className={styles.mobileMenuButton}
+            type="text"
+            icon={<MenuOutlined style={{ color: 'white' }} />}
+            onClick={() => setDrawerVisible(true)}
+          />
+        )}
       </Header>
+
+      {/* Drawer cho menu mobile */}
+      <Drawer
+        title="Menu"
+        placement="left"
+        onClose={() => setDrawerVisible(false)}
+        visible={drawerVisible}
+        bodyStyle={{ padding: 0 }}
+      >
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={navItems}
+          onClick={() => setDrawerVisible(false)}
+        />
+      </Drawer>
 
       <Content className={styles.content}>
         {children}
