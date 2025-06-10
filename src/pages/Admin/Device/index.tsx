@@ -103,7 +103,7 @@ const AdminDevicesDashboard: React.FC = () => {
                 background: '#a259ff',
                 marginTop: 8,
               }}
-              onClick={() => history.push('/admin/statiticstatitic')}
+              onClick={() => history.push('/admin/statistic')}
             >
               Chọn Thời Gian
             </Button>
