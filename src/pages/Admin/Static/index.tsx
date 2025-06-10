@@ -1,10 +1,11 @@
-
 import React from 'react';
-import { Table, Tag } from 'antd';
+import { Table, Tag, Button } from 'antd';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import ColumnChart from '@/components/Chart/ColumnChart';
 import DonutChart from '@/components/Chart/DonutChart';
 
-// Định nghĩa kiểu dữ liệu cho thiết bị
+
 type Device = {
   rank: number;
   name: string;
@@ -36,7 +37,6 @@ const columns = [
     title: 'Tên Thiết Bị',
     dataIndex: 'name',
     key: 'name',
-    filterSearch: true,
     filters: mockDeviceTableData.map(d => ({ text: d.name, value: d.name })),
     onFilter: (value: string | number | boolean, record: Device) => record.name.indexOf(value as string) === 0,
   },
@@ -67,11 +67,29 @@ const columns = [
   },
 ];
 
+// Hàm xuất Excel
+const exportToExcel = () => {
+  // Chuyển dữ liệu sang dạng sheet
+  const ws = XLSX.utils.json_to_sheet(mockDeviceTableData);
+  // Tạo workbook mới
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Thống kê thiết bị');
+  // Ghi file
+  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  saveAs(data, 'thong_ke_thiet_bi.xlsx');
+};
+
 const DeviceStatisticsPage: React.FC = () => {
   return (
     <div className="device-statistics-page-container">
       <h1 className="page-title">Thống Kê Thiết Bị</h1>
       <p className="page-subtitle">Theo dõi và phân tích thiết bị được mượn nhiều nhất theo tuần, tháng và năm</p>
+      <div style={{ marginBottom: 16 }}>
+        <Button type="primary" onClick={exportToExcel}>
+          Xuất Excel
+        </Button>
+      </div>
       <div className="device-table-container">
         <div className="table-header">
           <h3>Bảng Chi Tiết Thống Kê</h3>
@@ -83,8 +101,7 @@ const DeviceStatisticsPage: React.FC = () => {
           rowKey="rank"
           pagination={{ pageSize: 5 }}
         />
-      </div>
-      <div className="charts-container">
+              <div className="charts-container">
         <div className="chart-item">
           <h2>Biểu đồ cột</h2>
           <ColumnChart
@@ -109,6 +126,7 @@ const DeviceStatisticsPage: React.FC = () => {
             showTotal={true}
           />
         </div>
+      </div>
       </div>
     </div>
   );
