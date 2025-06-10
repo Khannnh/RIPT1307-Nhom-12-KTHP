@@ -5,6 +5,72 @@ import { saveAs } from 'file-saver';
 import ColumnChart from '@/components/Chart/ColumnChart';
 import DonutChart from '@/components/Chart/DonutChart';
 
+// Hero Section viết trực tiếp trong file này
+const HeroSection: React.FC<{
+  totalBorrows: number;
+  popularDevice: string;
+  popularDeviceBorrows: number;
+  uniqueDeviceTypes: number;
+}> = ({
+  totalBorrows,
+  popularDevice,
+  popularDeviceBorrows,
+  uniqueDeviceTypes,
+}) => (
+  <div className="hero-section-wrapper" style={{ marginBottom: 32 }}>
+    <div className="time-filter-section" style={{ marginBottom: 24 }}>
+      <span style={{ marginRight: 8 }}>📅 Bộ lọc thời gian:</span>
+      <button className="filter-button active" style={{ marginRight: 4 }}>Tuần</button>
+      <button className="filter-button active" style={{ marginRight: 4 }}>Tháng</button>
+      <button className="filter-button active" style={{ marginRight: 8 }}>Năm</button>
+      <select className="filter-dropdown" style={{ marginRight: 8 }}>
+        <option>Năm 2023</option>
+        <option>Năm 2024</option>
+        <option>Năm 2025</option>
+      </select>
+      <select className="filter-dropdown">
+        <option>Tháng 1</option>
+        <option>Tháng 2</option>
+        <option>Tháng 3</option>
+        <option>Tháng 4</option>
+        <option>Tháng 5</option>
+        <option selected>Tháng 6</option>
+        <option>Tháng 7</option>
+        <option>Tháng 8</option>
+        <option>Tháng 9</option>
+        <option>Tháng 10</option>
+        <option>Tháng 11</option>
+        <option>Tháng 12</option>
+      </select>
+    </div>
+    <div className="hero-cards-container" style={{ display: 'flex', gap: 24 }}>
+      <div className="card" style={{ flex: 1, background: '#b3e0ff', borderRadius: 12, padding: 16 }}>
+        <div className="card-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <h3 style={{ flex: 1, margin: 0 }}>Tổng Lượt Mượn</h3>
+          <span className="icon">📈</span>
+        </div>
+        <p className="card-value" style={{ fontSize: 28, fontWeight: 600 }}>{totalBorrows}</p>
+        <p className="card-description" style={{ color: '#888' }}>Tháng 6 năm 2025</p>
+      </div>
+      <div className="card" style={{ flex: 1, background: '#b3e0ff', borderRadius: 12, padding: 16 }}>
+        <div className="card-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <h3 style={{ flex: 1, margin: 0 }}>Thiết Bị Được Mượn Nhiều Nhất</h3>
+          <span className="icon">💻</span>
+        </div>
+        <p className="card-value" style={{ fontSize: 28, fontWeight: 600 }}>{popularDevice}</p>
+        <p className="card-description" style={{ color: '#888' }}>{popularDeviceBorrows} lượt mượn</p>
+      </div>
+      <div className="card" style={{ flex: 1, background: '#b3e0ff', borderRadius: 12, padding: 16 }}>
+        <div className="card-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <h3 style={{ flex: 1, margin: 0 }}>Loại Thiết Bị</h3>
+          <span className="icon">📦</span>
+        </div>
+        <p className="card-value" style={{ fontSize: 28, fontWeight: 600 }}>{uniqueDeviceTypes}</p>
+        <p className="card-description" style={{ color: '#888' }}>Danh mục khác nhau</p>
+      </div>
+    </div>
+  </div>
+);
 
 type Device = {
   rank: number;
@@ -69,22 +135,32 @@ const columns = [
 
 // Hàm xuất Excel
 const exportToExcel = () => {
-  // Chuyển dữ liệu sang dạng sheet
   const ws = XLSX.utils.json_to_sheet(mockDeviceTableData);
-  // Tạo workbook mới
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Thống kê thiết bị');
-  // Ghi file
   const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
   saveAs(data, 'thong_ke_thiet_bi.xlsx');
 };
 
 const DeviceStatisticsPage: React.FC = () => {
+  // Tính toán số liệu cho HeroSection
+  const totalBorrows = mockDeviceTableData.reduce((sum, d) => sum + d.borrows, 0);
+  const popularDeviceObj = mockDeviceTableData.reduce((max, d) => d.borrows > max.borrows ? d : max, mockDeviceTableData[0]);
+  const popularDevice = popularDeviceObj.name;
+  const popularDeviceBorrows = popularDeviceObj.borrows;
+  const uniqueDeviceTypes = new Set(mockDeviceTableData.map(d => d.category)).size;
+
   return (
     <div className="device-statistics-page-container">
-      <h1 className="page-title">Thống Kê Thiết Bị</h1>
-      <p className="page-subtitle">Theo dõi và phân tích thiết bị được mượn nhiều nhất theo tuần, tháng và năm</p>
+      {/* Hero Section ở đầu trang */}
+      <HeroSection
+        totalBorrows={totalBorrows}
+        popularDevice={popularDevice}
+        popularDeviceBorrows={popularDeviceBorrows}
+        uniqueDeviceTypes={uniqueDeviceTypes}
+      />
+
       <div style={{ marginBottom: 16 }}>
         <Button type="primary" onClick={exportToExcel}>
           Xuất Excel
@@ -101,13 +177,14 @@ const DeviceStatisticsPage: React.FC = () => {
           rowKey="rank"
           pagination={{ pageSize: 5 }}
         />
-              <div className="charts-container">
-        <div className="chart-item">
+      </div>
+      <div className="charts-container" style={{ marginTop: 32 }}>
+        <div className="chart-item" style={{ marginBottom: 32 }}>
           <h2>Biểu đồ cột</h2>
           <ColumnChart
             title="Số lượt mượn theo thiết bị"
-            xAxis={['Laptop Dell XPS 13', 'iPad Pro 12.9"', 'Canon EOS R5', 'Macbook Air M2', 'Surface Pro 9', 'iPhone 14 Pro', 'Sony A7 IV', 'Lenovo ThinkPad X1']}
-            yAxis={[[180, 152, 128, 112, 100, 88, 76, 61]]}
+            xAxis={mockDeviceTableData.map(d => d.name)}
+            yAxis={[mockDeviceTableData.map(d => d.borrows)]}
             yLabel={['Số lượt mượn']}
             height={350}
             width={1000}
@@ -118,15 +195,14 @@ const DeviceStatisticsPage: React.FC = () => {
           <h2>Biểu đồ tròn</h2>
           <DonutChart
             title="Tỷ lệ mượn theo thiết bị"
-            xAxis={['Laptop Dell XPS 13', 'iPad Pro 12.9"', 'Canon EOS R5', 'Macbook Air M2', 'Surface Pro 9', 'iPhone 14 Pro', 'Sony A7 IV', 'Lenovo ThinkPad X1']}
-            yAxis={[[180, 152, 128, 112, 100, 88, 76, 61]]}
+            xAxis={mockDeviceTableData.map(d => d.name)}
+            yAxis={[mockDeviceTableData.map(d => d.borrows)]}
             yLabel={['Tỷ lệ']}
             height={350}
             width={1000}
             showTotal={true}
           />
         </div>
-      </div>
       </div>
     </div>
   );

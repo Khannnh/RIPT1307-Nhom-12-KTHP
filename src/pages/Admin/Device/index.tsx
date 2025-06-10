@@ -43,7 +43,7 @@ const AdminDevicesDashboard: React.FC = () => {
             style={{ boxShadow: '0 2px 8px #f0f1f2', borderRadius: 12, minHeight: 180 }}
             bodyStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
           >
-            <BarChartOutlined style={{ fontSize: 36, color: '#3b5cff', marginBottom: 16 }} />
+            <BarChartOutlined style={{ fontSize: 63, color: '#3b5cff', marginBottom: 16 }} />
             <Title level={4}>Thống Kê Chi Tiết</Title>
             <Paragraph style={{ textAlign: 'center' }}>
               Xem báo cáo thiết bị được mượn nhiều nhất theo tuần, tháng, năm
@@ -67,7 +67,7 @@ const AdminDevicesDashboard: React.FC = () => {
             style={{ boxShadow: '0 2px 8px #f0f1f2', borderRadius: 12, minHeight: 180 }}
             bodyStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
           >
-            <LineChartOutlined style={{ fontSize: 36, color: '#00c292', marginBottom: 16 }} />
+            <LineChartOutlined style={{ fontSize: 63, color: '#00c292', marginBottom: 16 }} />
             <Title level={4}>Phân Tích Xu Hướng</Title>
             <Paragraph style={{ textAlign: 'center' }}>
               Biểu đồ trực quan giúp hiểu rõ xu hướng sử dụng thiết bị
@@ -91,7 +91,7 @@ const AdminDevicesDashboard: React.FC = () => {
             style={{ boxShadow: '0 2px 8px #f0f1f2', borderRadius: 12, minHeight: 180 }}
             bodyStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
           >
-            <CalendarOutlined style={{ fontSize: 36, color: '#a259ff', marginBottom: 16 }} />
+            <CalendarOutlined style={{ fontSize: 63, color: '#a259ff', marginBottom: 16 }} />
             <Title level={4}>Lọc Theo Thời Gian</Title>
             <Paragraph style={{ textAlign: 'center' }}>
               Tuỳ chỉnh khoảng thời gian xem báo cáo một cách linh hoạt
