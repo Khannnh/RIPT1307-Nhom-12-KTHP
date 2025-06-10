@@ -37,7 +37,7 @@ export default defineConfig({
 	routes: [
 		{
 			path: '/user',
-			layout: false,
+			layout: false, // Tắt layout mặc định của UmiJS
 			routes: [
 				{
 					path: '/user/auth/login',

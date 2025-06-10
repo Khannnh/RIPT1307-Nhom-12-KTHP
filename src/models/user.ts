@@ -1,5 +1,5 @@
 import { Effect, Reducer } from 'umi';
-import { loginUser, registerUser, loginAdmin } from '@/services/user';
+import { loginUser, registerUser, loginAdmin } from '@/services/User/user';
 
 export interface UserModelState {
   currentUser?: any;

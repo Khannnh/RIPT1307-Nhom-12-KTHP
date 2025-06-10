@@ -1,81 +1,62 @@
-// import { refreshAccesssToken } from '@/services/ant-design-pro/api';
 import { message, notification } from 'antd';
 import axios from 'axios';
 import { history } from 'umi';
 import data from '@/locales/vi-VN';
 
-// function routeLogin(errorCode: string) {
-//   // notification.warning({
-//   //   message: 'Vui lòng đăng nhập lại',
-//   //   description: data.error[errorCode],
-//   // });
-//   // localStorage.clear();
-//   history.replace({
-//     pathname: '/user/login',
-//   });
-// }
-
-// for multiple request
-// let isRefreshing = false;
-// let failedQueue: any[] = [];
-// const processQueue = (error: any, token: any = null) => {
-//   failedQueue.forEach((prom) => {
-//     if (error) {
-//       prom.reject(error);
-//     } else {
-//       prom.resolve(token);
-//     }
-//   });
-//   failedQueue = [];
-// };
-
-/**
- * Chuyển sang xử lý access_token with OIDC auth ở Technical Support
- */
-// Add a request interceptor
-// axios.interceptors.request.use(
-//   (config) => {
-//     if (!config.headers.Authorization) {
-//       const token = localStorage.getItem('token');
-//       if (token) {
-//         // eslint-disable-next-line no-param-reassign
-//         config.headers.Authorization = `Bearer ${token}`;
-//       }
-//     }
-//     return config;
-//   },
-//   (error) => Promise.reject(error),
-// );
-
 // Tạo instance axios với baseURL
 const instance = axios.create({
 	baseURL: 'http://localhost:3456',
 	timeout: 10000,
+	headers: {
+		'Content-Type': 'application/json',
+	},
 });
 
 // Add a request interceptor
 instance.interceptors.request.use(
 	(config) => {
+		console.log('🚀 Axios Request:', {
+			url: config.url,
+			method: config.method?.toUpperCase(),
+			baseURL: config.baseURL,
+			fullURL: `${config.baseURL}${config.url}`,
+		});
+
 		// Lấy token từ localStorage
 		const token = localStorage.getItem('token');
 		if (token) {
-			// Thêm token vào header
 			config.headers.Authorization = `Bearer ${token}`;
+			console.log('✅ Token added to request');
+		} else {
+			console.log('❌ No token found');
 		}
 		return config;
 	},
 	(error) => {
+		console.error('❌ Request interceptor error:', error);
 		return Promise.reject(error);
 	}
 );
 
 // Add a response interceptor
 instance.interceptors.response.use(
-	(response) => response,
+	(response) => {
+		console.log('✅ Axios Response:', {
+			url: response.config.url,
+			status: response.status,
+			data: response.data,
+		});
+		return response;
+	},
 	(error) => {
-		const er = error?.response?.data;
+		console.error('❌ Axios Error:', {
+			url: error.config?.url,
+			status: error.response?.status,
+			data: error.response?.data,
+			message: error.message,
+		});
 
-		// Safely access nested properties with fallbacks
+		const er = error?.response?.data;
 		let descriptionError = 'Có lỗi xảy ra';
 
 		try {
@@ -127,11 +108,12 @@ instance.interceptors.response.use(
 					// Xóa token và chuyển về trang đăng nhập nếu token hết hạn
 					localStorage.removeItem('token');
 					localStorage.removeItem('user');
+					localStorage.removeItem('role');
 					notification.error({
 						message: 'Phiên đăng nhập đã hết hạn',
 						description: 'Vui lòng đăng nhập lại',
 					});
-					history.push('/user/auth/login');
+					history.push('/auth/login');
 					break;
 
 				case 403:

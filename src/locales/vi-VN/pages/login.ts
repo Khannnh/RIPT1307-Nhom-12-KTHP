@@ -1,5 +1,5 @@
 export default {
-	'pages.layouts.userLayout.title': 'HỆ THỐNG ĐÀO TẠO TRỰC TUYẾN',
+	'pages.layouts.userLayout.title': 'HỆ THỐNG QUẢN LÝ THIẾT BỊ',
 	'pages.login.accountLogin.tab': 'Tài khoản người dùng',
 	'pages.login.accountLoginAdmin.tab': 'Tài khoản quản trị viên',
 	'pages.login.accountRegister.tab': 'Đăng ký tài khoản',

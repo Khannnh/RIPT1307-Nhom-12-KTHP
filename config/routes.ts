@@ -1,169 +1,189 @@
 ﻿export default [
+	// Root redirect first
+	{
+		path: '/',
+		redirect: '/auth/login',
+		exact: true,
+	},
+
 	// Auth routes - Không cần đăng nhập
 	{
-		path: '/user',
+		path: '/auth',
 		layout: false,
 		routes: [
 			{
-				path: '/user/login',
-				name: 'Đăng nhập',
-				component: '@/pages/user/Login',
+				path: '/auth/login',
+				component: '@/pages/Signin/Login',
 				exact: true,
 			},
 			{
-				path: '/user/register',
-				name: 'Đăng ký',
-				component: '@/pages/user/Register',
+				path: '/auth/register',
+				component: '@/pages/Signin/Register',
 				exact: true,
 			},
 			{
-				path: '/user',
-				redirect: '/user/auth/login',
+				path: '/auth',
+				redirect: '/auth/login',
 				exact: true,
 			},
 		],
 	},
 
-	// Main menu routes - Cần đăng nhập
+	// Admin routes
 	{
-		path: '/',
+		path: '/admin',
 		component: '@/layouts/BasicLayout',
+		wrappers: ['@/middleware/auth'],
+		authority: ['admin'],
 		routes: [
-			// Trang chủ - Point to existing TrangChu component
 			{
-				path: '/dashboard',
-				name: 'Trang chủ',
-				icon: 'HomeOutlined',
-				component: '@/pages/Home',
-				layout: false,
-				exact: true,
-				hideInMenu: true,
-			},
-
-			// Quản lý thiết bị
-			{
-				name: 'Lich sử mượn thiết bị',
-				icon: 'AppstoreOutlined',
-				path: '/devices',
-				routes: [
-					{
-						path: '/devices',
-						name: 'Danh sách thiết bị',
-						component: '@/pages/Devices',
-						layout: false,
-						exact: true,
-						hideInMenu: true,
-					},
-					{
-						path: '/devices/borrow',
-						name: 'Mượn thiết bị',
-						component: '@/pages/MuonDo/home',
-						layout: false,
-				hideInMenu: true,
-					},
-					{
-						path: '/devices/history',
-						name: 'Lịch sử mượn trả',
-						component: '@/pages/History',
-						layout: false,
-				hideInMenu: true,
-					},
-				],
-				layout: false,
-				hideInMenu: true,
-			},
-
-			// Thống kê
-			{
-				path: '/statistics',
-				name: 'Lịch sử mượn',
-				icon: 'BarChartOutlined',
-				component: '@/pages/History',
-				layout: false,
-				hideInMenu: true,
-			},
-
-			// Thông tin cá nhân
-			{
-				path: '/profile',
-				name: 'Thông tin cá nhân',
-				icon: 'UserOutlined',
-				component: '@/pages/Profile',
-				layout: false,
-				hideInMenu: true,
-			},
-
-			// Giới thiệu - Point to existing GioiThieu component
-			{
-				path: '/about',
-				name: 'Giới thiệu',
-				icon: 'InfoCircleOutlined',
-				component: '@/pages/TienIch/GioiThieu',
-				hideInMenu: true,
-				exact: true,
-			},
-
-			// Notification routes
-			{
-				path: '/notification',
-				routes: [
-					{
-						path: '/notification/subscribe',
-						component: '@/pages/ThongBao/Subscribe',
-						exact: true,
-					},
-					{
-						path: '/notification/check',
-						component: '@/pages/ThongBao/Check',
-						exact: true,
-					},
-					{
-						path: '/notification',
-						component: '@/pages/ThongBao/NotifOneSignal',
-						exact: true,
-					},
-				],
-				layout: false,
-				hideInMenu: true,
-			},
-
-			// Error pages - Point to existing exception components
-			{
-				path: '/403',
-				component: '@/pages/exception/403',
-				layout: false,
+				path: '/admin/dashboard',
+				component: '@/pages/Admin/DeviceManagement/index',
 				exact: true,
 			},
 			{
-				path: '/404',
-				component: '@/pages/exception/404',
-				layout: false,
+				path: '/admin/devices',
+				component: '@/pages/Admin/DeviceManagement/index',
 				exact: true,
 			},
 			{
-				path: '/500',
-				component: '@/pages/exception/500',
-				layout: false,
+				path: '/admin/borrow-requests',
+				component: '@/pages/Admin/BorrowRequests/Pending/index',
 				exact: true,
 			},
 			{
-				path: '/hold-on',
-				component: '@/pages/exception/DangCapNhat',
-				layout: false,
+				path: '/admin/borrow-history',
+				component: '@/pages/Admin/BorrowRecords/index',
 				exact: true,
 			},
-
-			// Root path
 			{
-				path: '/',
-				redirect: '/dashboard',
+				path: '/admin/statistics',
+				component: '@/pages/Admin/DeviceManagement/index',
 				exact: true,
 			},
-
-			// 404 fallback
 			{
-				component: '@/pages/exception/404',
+				path: '/admin',
+				redirect: '/admin/dashboard',
+				exact: true,
 			},
 		],
+	},
+
+	// User routes
+	{
+		path: '/app',
+		component: '@/layouts/BasicLayout',
+		wrappers: ['@/middleware/auth'],
+		authority: ['user'],
+		routes: [
+			{
+				path: '/app/dashboard',
+				component: '@/pages/Userr/Home/index',
+				exact: true,
+			},
+			{
+				path: '/app/devices',
+				component: '@/pages/Userr/Devices/index',
+				exact: true,
+			},
+			{
+				path: '/app/my-requests',
+				component: '@/pages/Userr/MyRequests/index',
+				exact: true,
+			},
+			{
+				path: '/app/history',
+				component: '@/pages/Userr/History/index',
+				exact: true,
+			},
+			{
+				path: '/app/profile',
+				component: '@/pages/Userr/Profile/index',
+				exact: true,
+			},
+			{
+				path: '/app/statistics',
+				component: '@/pages/Userr/Statistics/index',
+				exact: true,
+			},
+			{
+				path: '/app',
+				redirect: '/app/dashboard',
+				exact: true,
+			},
+		],
+	},
+
+	// Legacy redirects
+	{
+		path: '/dashboard',
+		redirect: '/app/dashboard',
+		exact: true,
+	},
+	{
+		path: '/devices',
+		redirect: '/app/devices',
+		exact: true,
+	},
+	{
+		path: '/my-requests',
+		redirect: '/app/my-requests',
+		exact: true,
+	},
+	{
+		path: '/history',
+		redirect: '/app/history',
+		exact: true,
+	},
+	{
+		path: '/profile',
+		redirect: '/app/profile',
+		exact: true,
+	},
+	{
+		path: '/statistics',
+		redirect: '/app/statistics',
+		exact: true,
+	},
+	{
+		path: '/user/login',
+		redirect: '/auth/login',
+		exact: true,
+	},
+	{
+		path: '/user/register',
+		redirect: '/auth/register',
+		exact: true,
+	},
+
+	// Error pages
+	{
+		path: '/403',
+		component: '@/pages/exception/403',
+		layout: false,
+		exact: true,
+	},
+	{
+		path: '/404',
+		component: '@/pages/exception/404',
+		layout: false,
+		exact: true,
+	},
+	{
+		path: '/500',
+		component: '@/pages/exception/500',
+		layout: false,
+		exact: true,
+	},
+	{
+		path: '/hold-on',
+		component: '@/pages/exception/DangCapNhat',
+		layout: false,
+		exact: true,
+	},
+
+	// 404 fallback
+	{
+		component: '@/pages/exception/404',
 	},
 ];
