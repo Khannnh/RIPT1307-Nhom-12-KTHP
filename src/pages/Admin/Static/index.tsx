@@ -103,13 +103,11 @@ const DeviceStatisticsPage: React.FC = () => {
   // Truyền tháng/năm vào hook
   const { tableData, loading } = useBorrowedDeviceTable(selectedMonth, selectedYear);
 
-  // Các hook khác giữ nguyên
-  const { totalBorrows } = useStatistic();
-  const { devices: topBorrowedDevices } = useTopBorrowedDevices();
-  const topDevice = topBorrowedDevices[0];
+  const { totalBorrows } = useStatistic(selectedMonth, selectedYear);
+  const { device: topDevice } = useTopBorrowedDevices();
   const popularDevice = topDevice ? topDevice.deviceName : '---';
   const popularDeviceBorrows = topDevice ? topDevice.borrowCount : 0;
-  const categoryCount = useDeviceCategoryCount();
+  const categoryCount = useDeviceCategoryCount(selectedMonth, selectedYear);
   const uniqueDeviceTypes = Object.keys(categoryCount).length;
 
   // Tạo filters động từ tableData
