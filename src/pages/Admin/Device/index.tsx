@@ -4,9 +4,9 @@ import {
   BarChartOutlined,
   LineChartOutlined,
   CalendarOutlined,
-    AppstoreOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
-import { history, useDispatch } from 'umi';
+import { history } from 'umi';
 
 const { Title, Paragraph } = Typography;
 
@@ -15,7 +15,17 @@ const AdminDevicesDashboard: React.FC = () => {
     <div style={{ background: '#f5f8ff', minHeight: '100vh', padding: 32 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
         <Title level={3} style={{ margin: 0 }}>Hệ Thống Quản Lý Thiết Bị</Title>
-        <Button type="primary" onClick={() => history.push('/admin/statistics')} size="large">Xem Thống Kê</Button>
+        <Button
+          style={{
+            borderColor: '#3b5cff',
+            color: '#fff',
+            background: '#3b5cff',
+          }}
+          onClick={() => history.push('/admin/statistic')}
+          size="large"
+        >
+          Xem Thống Kê
+        </Button>
       </div>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <Title level={2} style={{ color: '#3b5cff', marginBottom: 8 }}>
@@ -38,7 +48,17 @@ const AdminDevicesDashboard: React.FC = () => {
             <Paragraph style={{ textAlign: 'center' }}>
               Xem báo cáo thiết bị được mượn nhiều nhất theo tuần, tháng, năm
             </Paragraph>
-            <Button type="primary" style={{ marginTop: 8 }}>Xem Thống Kê</Button>
+            <Button
+              style={{
+                borderColor: '#3b5cff',
+                color: '#fff',
+                background: '#3b5cff',
+                marginTop: 8,
+              }}
+              onClick={() => history.push('/admin/statistic')}
+            >
+              Xem Thống Kê
+            </Button>
           </Card>
         </Col>
         <Col xs={24} md={8}>
@@ -52,7 +72,15 @@ const AdminDevicesDashboard: React.FC = () => {
             <Paragraph style={{ textAlign: 'center' }}>
               Biểu đồ trực quan giúp hiểu rõ xu hướng sử dụng thiết bị
             </Paragraph>
-            <Button type="default" style={{ borderColor: '#00c292', color: '#00c292', marginTop: 8 }}>
+            <Button
+              style={{
+                borderColor: '#00c292',
+                color: '#fff',
+                background: '#00c292',
+                marginTop: 8,
+              }}
+              onClick={() => history.push('/admin/statistic')}
+            >
               Xem Biểu Đồ
             </Button>
           </Card>
@@ -68,7 +96,15 @@ const AdminDevicesDashboard: React.FC = () => {
             <Paragraph style={{ textAlign: 'center' }}>
               Tuỳ chỉnh khoảng thời gian xem báo cáo một cách linh hoạt
             </Paragraph>
-            <Button type="default" style={{ borderColor: '#a259ff', color: '#a259ff', marginTop: 8 }}>
+            <Button
+              style={{
+                borderColor: '#a259ff',
+                color: '#fff',
+                background: '#a259ff',
+                marginTop: 8,
+              }}
+              onClick={() => history.push('/admin/statiticstatitic')}
+            >
               Chọn Thời Gian
             </Button>
           </Card>

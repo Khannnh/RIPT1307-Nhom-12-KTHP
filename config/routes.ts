@@ -48,6 +48,15 @@
 				exact: true,
 				hideInMenu: false, // hoặc true nếu không muốn hiện menu
 			},
+			{
+				path: '/admin/statistic',
+				name: 'Thống Kê(Admin)',
+				icon: 'BarchartOutlined',
+				component: '@/pages/Admin/Static', // Đúng với file bạn vừa tạo
+				layout: false,
+				exact: true,
+				hideInMenu: false, // hoặc true nếu không muốn hiện menu
+			},
 
 			// Quản lý thiết bị
 			{
