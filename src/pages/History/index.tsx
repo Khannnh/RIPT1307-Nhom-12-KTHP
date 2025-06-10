@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Table, Tag, Space, Typography, Card, Layout, Button, message } from 'antd';
 import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { PageContainer } from '@ant-design/pro-layout';
-import { getBorrowRequests, cancelBorrowRequest, type BorrowRequest } from '@/services/borrow-request.service';
+import { cancelBorrowRequest, type BorrowRequest } from '@/services/borrow-request.service';
 import dayjs from 'dayjs';
 import styles from './index.less';
+import useHistory from '@/hooks/useHistory';
 
 const { Title } = Typography;
 const { Content } = Layout;
+
+// Nếu cần, mở rộng interface BorrowRequest ở đây cho đúng dữ liệu thực tế
+type BorrowRequestWithDevice = BorrowRequest & {
+  device?: any[];
+};
 
 const getStatusTag = (status: string) => {
   switch (status) {
@@ -26,70 +31,30 @@ const getStatusTag = (status: string) => {
 };
 
 const HistoryPage: React.FC = () => {
-  const [data, setData] = useState<BorrowRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
-
-  const fetchBorrowRequests = async (params: any = {}) => {
-    try {
-      setLoading(true);
-      const response = await getBorrowRequests({
-        current: params.current || pagination.current,
-        pageSize: params.pageSize || pagination.pageSize,
-      });
-
-      setData(response.data);
-      setPagination({
-        current: response.current,
-        pageSize: response.pageSize,
-        total: response.total,
-      });
-    } catch (error) {
-      console.error('Error fetching borrow requests:', error);
-      message.error('Không thể tải lịch sử mượn thiết bị');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBorrowRequests();
-  }, []);
-
-  const handleTableChange = (paginationParams: any) => {
-    fetchBorrowRequests({
-      current: paginationParams.current,
-      pageSize: paginationParams.pageSize,
-    });
-  };
+  const { data, pagination, loading, refetch } = useHistory();
 
   const handleCancel = async (id: string) => {
     try {
       await cancelBorrowRequest(id);
       message.success('Hủy yêu cầu thành công');
-      fetchBorrowRequests();
+      refetch();
     } catch (error) {
       message.error('Không thể hủy yêu cầu');
     }
   };
 
-  const columns: ColumnsType<BorrowRequest> = [
+  const columns: ColumnsType<BorrowRequestWithDevice> = [
     {
-      title: 'Mã yêu cầu',
-      dataIndex: 'id',
-      key: 'id',
+      title: 'Số lượng',
+      key: 'quantity',
       width: 120,
-      render: (id: string) => id.substring(0, 8),
+      render: (_: any, record: BorrowRequestWithDevice) => record.device?.[0]?.quantity ?? '',
     },
     {
       title: 'Tên thiết bị',
-      dataIndex: ['device', 'name'],
       key: 'deviceName',
       width: 200,
+      render: (_: any, record: BorrowRequestWithDevice) => record.device?.[0]?.name || '',
     },
     {
       title: 'Ngày mượn',
@@ -99,7 +64,7 @@ const HistoryPage: React.FC = () => {
       render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
-      title: 'Ngày trả',
+      title: 'Ngày dự định trả',
       dataIndex: 'returnDate',
       key: 'returnDate',
       width: 150,
@@ -116,7 +81,7 @@ const HistoryPage: React.FC = () => {
       title: 'Thao tác',
       key: 'action',
       width: 100,
-      render: (_: any, record: BorrowRequest) => (
+      render: (_: any, record: BorrowRequestWithDevice) => (
         <Space>
           {record.status === 'pending' && (
             <Button
@@ -135,27 +100,24 @@ const HistoryPage: React.FC = () => {
 
   return (
     <Content className={styles.content}>
-      <PageContainer>
-        <div className={styles.container}>
-          <Card className={styles.historyCard}>
-            <Title level={2} className={styles.title}>Lịch sử mượn thiết bị</Title>
-            <Table
-              columns={columns}
-              dataSource={data}
-              loading={loading}
-              rowKey="id"
-              className={styles.table}
-              pagination={{
-                ...pagination,
-                showSizeChanger: true,
-                showTotal: (total) => `Tổng số ${total} bản ghi`,
-              }}
-              onChange={handleTableChange}
-              scroll={{ x: 'max-content' }}
-            />
-          </Card>
-        </div>
-      </PageContainer>
+      <div className={styles.container}>
+        <Card className={styles.historyCard}>
+          <Title level={2} className={styles.title}>Lịch sử mượn thiết bị</Title>
+          <Table
+            columns={columns}
+            dataSource={data}
+            loading={loading}
+            rowKey="id"
+            className={styles.table}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              showTotal: (total) => `Tổng số ${total} bản ghi`,
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </Card>
+      </div>
     </Content>
   );
 };

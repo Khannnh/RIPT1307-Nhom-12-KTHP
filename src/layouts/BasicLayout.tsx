@@ -63,7 +63,7 @@ const BasicLayout: React.FC = ({ children }) => {
     {
       key: '/statistics',
       icon: <BarChartOutlined />,
-      label: <Link to="/statistics">Thống kê</Link>,
+      label: <Link to="/statistics">Lịch sử mượn trả</Link>,
     },
   ];
 

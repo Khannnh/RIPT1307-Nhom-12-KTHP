@@ -25,10 +25,13 @@ export const createBorrowRequest = async (params: CreateBorrowRequestParams): Pr
   const response = await axios.post('/user/borrow-requests', params);
   return response.data;
 };
-
-export const getUserBorrowRequests = async (): Promise<BorrowRequest[]> => {
+//lấy danh sách lịch sử mượn của mìnhmình
+export const getUserBorrowRequests = async () => {
   const response = await axios.get('/user/borrow-requests');
-  return response.data;
+  return {
+    data: response.data.data.data,
+    pagination: response.data.data.pagination,
+  };
 };
 
 export const getBorrowRequestDetail = async (id: string): Promise<BorrowRequest> => {
