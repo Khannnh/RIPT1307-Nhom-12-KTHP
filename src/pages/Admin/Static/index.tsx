@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStatistic } from '@/hooks/useStatistic';
 import { useTopBorrowedDevices } from '@/hooks/useTopBorrow';
 import { useDeviceCategoryCount } from '@/hooks/useDevice';
@@ -15,36 +15,45 @@ const HeroSection: React.FC<{
   popularDevice: string;
   popularDeviceBorrows: number;
   uniqueDeviceTypes: number;
+  selectedMonth: number;
+  setSelectedMonth: (m: number) => void;
+  selectedYear: number;
+  setSelectedYear: (y: number) => void;
 }> = ({
   totalBorrows,
   popularDevice,
   popularDeviceBorrows,
   uniqueDeviceTypes,
+  selectedMonth,
+  setSelectedMonth,
+  selectedYear,
+  setSelectedYear,
 }) => (
   <div className="hero-section-wrapper" style={{ marginBottom: 32 }}>
     <div className="time-filter-section" style={{ marginBottom: 24 }}>
       <span style={{ marginRight: 8 }}>📅 Bộ lọc thời gian:</span>
-      <button className="filter-button active" style={{ marginRight: 4 }}>Tuần</button>
-      <button className="filter-button active" style={{ marginRight: 4 }}>Tháng</button>
-      <button className="filter-button active" style={{ marginRight: 8 }}>Năm</button>
-      <select className="filter-dropdown" style={{ marginRight: 8 }}>
-        <option>Năm 2023</option>
-        <option>Năm 2024</option>
-        <option>Năm 2025</option>
+      <select
+        className="filter-dropdown"
+        value={selectedMonth}
+        onChange={e => setSelectedMonth(Number(e.target.value))}
+        style={{ marginRight: 8 }}
+      >
+        {[...Array(12)].map((_, i) => (
+          <option key={i + 1} value={i + 1}>
+            Tháng {i + 1}
+          </option>
+        ))}
       </select>
-      <select className="filter-dropdown">
-        <option>Tháng 1</option>
-        <option>Tháng 2</option>
-        <option>Tháng 3</option>
-        <option>Tháng 4</option>
-        <option>Tháng 5</option>
-        <option selected>Tháng 6</option>
-        <option>Tháng 7</option>
-        <option>Tháng 8</option>
-        <option>Tháng 9</option>
-        <option>Tháng 10</option>
-        <option>Tháng 11</option>
-        <option>Tháng 12</option>
+      <select
+        className="filter-dropdown"
+        value={selectedYear}
+        onChange={e => setSelectedYear(Number(e.target.value))}
+      >
+        {[2023, 2024, 2025].map(y => (
+          <option key={y} value={y}>
+            Năm {y}
+          </option>
+        ))}
       </select>
     </div>
     <div className="hero-cards-container" style={{ display: 'flex', gap: 24 }}>
@@ -54,7 +63,9 @@ const HeroSection: React.FC<{
           <span className="icon">📈</span>
         </div>
         <p className="card-value" style={{ fontSize: 28, fontWeight: 600 }}>{totalBorrows}</p>
-        <p className="card-description" style={{ color: '#888' }}>Tháng 6 năm 2025</p>
+        <p className="card-description" style={{ color: '#888' }}>
+          Tháng {selectedMonth} năm {selectedYear}
+        </p>
       </div>
       <div className="card" style={{ flex: 1, background: '#b3e0ff', borderRadius: 12, padding: 16 }}>
         <div className="card-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
@@ -85,15 +96,21 @@ type Device = {
 };
 
 const DeviceStatisticsPage: React.FC = () => {
+  // State chọn tháng/năm
+  const [selectedMonth, setSelectedMonth] = useState(6);
+  const [selectedYear, setSelectedYear] = useState(2025);
+
+  // Truyền tháng/năm vào hook
+  const { tableData, loading } = useBorrowedDeviceTable(selectedMonth, selectedYear);
+
+  // Các hook khác giữ nguyên
   const { totalBorrows } = useStatistic();
   const { devices: topBorrowedDevices } = useTopBorrowedDevices();
   const topDevice = topBorrowedDevices[0];
   const popularDevice = topDevice ? topDevice.deviceName : '---';
   const popularDeviceBorrows = topDevice ? topDevice.borrowCount : 0;
-  // Lấy số lượng thiết bị theo danh mục
   const categoryCount = useDeviceCategoryCount();
   const uniqueDeviceTypes = Object.keys(categoryCount).length;
-  const { tableData, loading } = useBorrowedDeviceTable();
 
   // Tạo filters động từ tableData
   const categoryFilters = Array.from(new Set(tableData.map(d => d.category))).map(category => ({
@@ -160,6 +177,10 @@ const DeviceStatisticsPage: React.FC = () => {
         popularDevice={popularDevice}
         popularDeviceBorrows={popularDeviceBorrows}
         uniqueDeviceTypes={uniqueDeviceTypes}
+        selectedMonth={selectedMonth}
+        setSelectedMonth={setSelectedMonth}
+        selectedYear={selectedYear}
+        setSelectedYear={setSelectedYear}
       />
 
       <div style={{ marginBottom: 16 }}>
@@ -170,7 +191,7 @@ const DeviceStatisticsPage: React.FC = () => {
       <div className="device-table-container">
         <div className="table-header">
           <h3>Bảng Chi Tiết Thống Kê</h3>
-          <p>Danh sách thiết bị được mượn trong Tháng 6/2025</p>
+          <p>Danh sách thiết bị được mượn trong Tháng {selectedMonth}/{selectedYear}</p>
         </div>
         <Table
           columns={columns}

@@ -83,7 +83,7 @@ const ColumnChart = (props: DataChartType) => {
 	const series = yLabel.map((y, index) => ({
 		name: y,
 		data: yAxis?.[index] || [],
-		color: colors?.[index] ?? primaryColor,
+		color: colors?.[index] ??'#0099e6',
 	}));
 
 	return (
