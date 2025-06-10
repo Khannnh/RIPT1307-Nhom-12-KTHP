@@ -1,4 +1,5 @@
 import React from 'react';
+import { useStatistic } from '@/hooks/useStatistic';
 import { Table, Tag, Button } from 'antd';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -144,8 +145,11 @@ const exportToExcel = () => {
 };
 
 const DeviceStatisticsPage: React.FC = () => {
+
+    const { totalBorrows } = useStatistic();
+
   // Tính toán số liệu cho HeroSection
-  const totalBorrows = mockDeviceTableData.reduce((sum, d) => sum + d.borrows, 0);
+  //const totalBorrows = mockDeviceTableData.reduce((sum, d) => sum + d.borrows, 0);
   const popularDeviceObj = mockDeviceTableData.reduce((max, d) => d.borrows > max.borrows ? d : max, mockDeviceTableData[0]);
   const popularDevice = popularDeviceObj.name;
   const popularDeviceBorrows = popularDeviceObj.borrows;

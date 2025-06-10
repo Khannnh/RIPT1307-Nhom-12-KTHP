@@ -10,7 +10,7 @@ export interface BorrowRecord {
   status: 'borrowed' | 'returned' | 'overdue';
   notes: string | null;
 }
-
+//method cho user
 const borrowRecordService = {
   getUserBorrowRecords: async () => {
     const response = await axios.get('/user/borrow-records');
@@ -24,8 +24,8 @@ const borrowRecordService = {
 
   // Admin only
   getAllBorrowRecords: async () => {
-    const response = await axios.get('/admin/borrow-records');
-    return response.data;
+    const response = await axios.get('admin/borrow-requests');
+    return response.data.data;
   },
 
   recordDeviceReturn: async (id: number, notes?: string) => {
