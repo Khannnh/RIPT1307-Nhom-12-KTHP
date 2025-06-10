@@ -36,6 +36,7 @@ import {
   UpdateDeviceRequest,
   DeviceStatistics,
 } from '@/services/admin/device.service';
+import { testAPIConnectivity, testAuth } from '@/services/admin/test-api.service';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -57,7 +58,7 @@ const DeviceManagement: React.FC = () => {
     total: 0,
   });
 
-  // Fetch devices với API thực tế (bỏ mock data)
+  // Enhanced fetchDevices with better error handling - Chỉ giữ lại 1 function này
   const fetchDevices = useCallback(async () => {
     setLoading(true);
     console.log('=== STARTING DEVICE FETCH ===');
@@ -72,7 +73,7 @@ const DeviceManagement: React.FC = () => {
       console.log('API Response received:', response);
 
       if (response && Array.isArray(response.data)) {
-        console.log('✅ Using API data');
+        console.log('✅ Setting devices data');
         setDevices(response.data);
         setPagination(prev => ({
           ...prev,
@@ -81,9 +82,11 @@ const DeviceManagement: React.FC = () => {
 
         if (response.data.length === 0) {
           message.info('Chưa có dữ liệu thiết bị trong hệ thống');
+        } else {
+          message.success(`Đã tải ${response.data.length} thiết bị`);
         }
       } else {
-        console.log('⚠️ API returned invalid data structure');
+        console.log('⚠️ Invalid response structure');
         setDevices([]);
         setPagination(prev => ({ ...prev, total: 0 }));
         message.warning('Dữ liệu từ server không đúng định dạng');
@@ -103,24 +106,6 @@ const DeviceManagement: React.FC = () => {
       setLoading(false);
     }
   }, [pagination.current, pagination.pageSize, searchKeyword]);
-
-  // Initial load và dependency changes
-  useEffect(() => {
-    console.log('=== COMPONENT: EFFECT TRIGGERED ===');
-    console.log('Trigger reason - pagination or search changed');
-    fetchDevices();
-  }, [fetchDevices]);
-
-  // Debug state changes
-  useEffect(() => {
-    console.log('=== COMPONENT: DEVICES STATE UPDATED ===');
-    console.log('New devices state:', devices);
-    console.log('Count:', devices.length);
-    if (devices.length > 0) {
-      console.log('First device sample:', devices[0]);
-      console.log('All device IDs:', devices.map(d => d.id || d._id));
-    }
-  }, [devices]);
 
   // Fetch statistics
   const fetchStatistics = async () => {
@@ -144,22 +129,76 @@ const DeviceManagement: React.FC = () => {
     }
   };
 
-  // Chỉ gọi fetchDevices và fetchStatistics khi component mount hoặc khi params thay đổi
-  useEffect(() => {
-    console.log('=== FETCHING DATA ===');
-    const initData = async () => {
-      await fetchDevices();
-      await fetchStatistics();
-    };
-    initData();
-  }, [pagination.current, pagination.pageSize, searchKeyword]);
+  // Test API function - thêm test tạo sample data
+  const handleTestAPI = async () => {
+    console.log('=== STARTING API TESTS ===');
 
-  // Debug devices state changes
+    // Test auth first
+    const authResult = await testAuth();
+    console.log('Auth result:', authResult);
+
+    // Test general endpoints
+    const apiResults = await testAPIConnectivity();
+    console.log('API results:', apiResults);
+
+    // Test borrow requests specifically
+    const { testBorrowRequestsEndpoint } = await import('@/services/admin/test-api.service');
+    const borrowResults = await testBorrowRequestsEndpoint();
+    console.log('Borrow requests test results:', borrowResults);
+
+    message.info('Kiểm tra Console để xem kết quả test API chi tiết');
+  };
+
+  // Thêm function tạo sample data
+  const handleCreateSampleData = async () => {
+    try {
+      message.loading('Đang tạo dữ liệu mẫu trong database...', 3);
+
+      const { testAndCreateSampleData } = await import('@/services/admin/test-api.service');
+      const result = await testAndCreateSampleData();
+
+      console.log('Sample data creation result:', result);
+
+      if (result.success) {
+        message.success(
+          `Đã tạo dữ liệu mẫu thành công! Devices: ${result.devices}, Borrow Requests: ${result.borrowRequests}`
+        );
+
+        // Refresh data
+        fetchDevices();
+        fetchStatistics();
+      } else {
+        message.error('Không thể tạo dữ liệu mẫu: ' + result.error);
+      }
+
+    } catch (error: any) {
+      console.error('Error creating sample data:', error);
+      message.error('Lỗi khi tạo dữ liệu mẫu');
+    }
+  };
+
+  // Initial load và dependency changes
   useEffect(() => {
-    console.log('=== DEVICES STATE CHANGED ===');
-    console.log('New devices:', devices);
-    console.log('Devices count:', devices.length);
-    console.log('First device:', devices[0]);
+    console.log('=== COMPONENT: EFFECT TRIGGERED ===');
+    console.log('Trigger reason - pagination or search changed');
+    fetchDevices();
+  }, [fetchDevices]);
+
+  // Initialize statistics when component mounts
+  useEffect(() => {
+    console.log('=== INITIALIZING STATISTICS ===');
+    fetchStatistics();
+  }, []);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log('=== COMPONENT: DEVICES STATE UPDATED ===');
+    console.log('New devices state:', devices);
+    console.log('Count:', devices.length);
+    if (devices.length > 0) {
+      console.log('First device sample:', devices[0]);
+      console.log('All device IDs:', devices.map(d => d.id || d._id));
+    }
   }, [devices]);
 
   // Get status tag color
@@ -362,7 +401,6 @@ const DeviceManagement: React.FC = () => {
     <div style={{ padding: 24 }}>
       <Title level={2}>Quản lý thiết bị</Title>
 
-
       {/* Statistics Cards */}
       {statistics && (
         <Row gutter={16} style={{ marginBottom: 24 }}>
@@ -417,6 +455,31 @@ const DeviceManagement: React.FC = () => {
               }}
             >
               Làm mới
+            </Button>
+            <Button
+              type="dashed"
+              onClick={handleTestAPI}
+              style={{ backgroundColor: '#f0f0f0' }}
+            >
+              Test API
+            </Button>
+            <Button
+              type="ghost"
+              onClick={handleCreateSampleData}
+              style={{ backgroundColor: '#e6f7ff', borderColor: '#91d5ff' }}
+            >
+              Tạo dữ liệu mẫu
+            </Button>
+            <Button
+              type="ghost"
+              onClick={() => {
+                console.log('Current devices state:', devices);
+                console.log('Current pagination:', pagination);
+                console.log('Current statistics:', statistics);
+                message.info('Kiểm tra Console để xem trạng thái hiện tại');
+              }}
+            >
+              Debug State
             </Button>
           </Space>
           <Button

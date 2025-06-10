@@ -26,6 +26,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import axios from 'axios';
 import {
   getAllBorrowRequests,
   getBorrowRequestById,
@@ -54,53 +55,113 @@ const PendingBorrowRequests: React.FC = () => {
     total: 0,
   });
 
-  // Fetch pending requests
+  // Enhanced fetch function với better debugging
   const fetchRequests = async () => {
-    setLoading(true);
     try {
       console.log('=== FETCHING PENDING REQUESTS ===');
+      setLoading(true);
 
-      const params: BorrowRequestParams = {
+      const response = await getAllBorrowRequests({
         current: pagination.current,
         pageSize: pagination.pageSize,
         status: 'pending',
-        keyword: searchKeyword,
-      };
+        keyword: searchKeyword.trim() || undefined,
+        startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
+        endDate: dateRange?.[1]?.format('YYYY-MM-DD'),
+        deviceId: deviceFilter?.trim()
+      });
 
-      if (dateRange && dateRange.length === 2) {
-        params.startDate = dateRange[0].format('YYYY-MM-DD');
-        params.endDate = dateRange[1].format('YYYY-MM-DD');
-      }
-
-      if (deviceFilter) {
-        params.deviceId = deviceFilter;
-      }
-
-      const response = await getAllBorrowRequests(params);
-
-      console.log('Pending requests response:', response);
+      console.log('=== COMPONENT RESPONSE ANALYSIS ===');
+      console.log('Response from service:', response);
       console.log('Requests data:', response.data);
+      console.log('Requests data length:', response.data?.length);
+      console.log('Total requests:', response.total);
+      console.log('Current page:', response.current);
+      console.log('Page size:', response.pageSize);
 
-      setRequests(response.data || []);
+      // Ensure we have array data
+      if (!Array.isArray(response.data)) {
+        console.error('❌ Service returned non-array data:', typeof response.data);
+        throw new Error('Service returned invalid data structure');
+      }
+
+      if (response.data.length === 0) {
+        console.log('⚠️ No pending requests found');
+        message.info('Không có yêu cầu mượn nào đang chờ duyệt');
+      } else {
+        console.log('✅ Found pending requests:', response.data.length);
+        console.log('Sample request:', response.data[0]);
+        message.success(`Đã tải ${response.data.length} yêu cầu chờ duyệt`);
+      }
+
+      setRequests(response.data);
       setPagination(prev => ({
         ...prev,
-        total: response.total || 0,
+        total: response.total
       }));
 
-    } catch (error) {
+    } catch (error: any) {
+      console.error('=== FETCH ERROR ===');
       console.error('Error fetching pending requests:', error);
-      message.error('Không thể tải danh sách yêu cầu mượn');
 
-      // Set empty data on error
       setRequests([]);
       setPagination(prev => ({ ...prev, total: 0 }));
+
+      message.error('Không thể lấy danh sách yêu cầu chờ duyệt: ' + (error.message || 'Lỗi không xác định'));
     } finally {
       setLoading(false);
     }
   };
 
+  // Test function để tạo data thực trong database
+  const handleCreateTestData = async () => {
+    try {
+      console.log('=== CREATING TEST DATA IN DATABASE ===');
+      message.loading('Đang tạo dữ liệu test trong database...', 2);
+
+      // Cần có deviceId thật từ database, hãy lấy từ devices endpoint trước
+      const devicesResponse = await axios.get('/admin/devices');
+      console.log('Available devices:', devicesResponse.data);
+
+      if (!devicesResponse.data?.data || devicesResponse.data.data.length === 0) {
+        message.error('Cần có thiết bị trong database trước khi tạo yêu cầu mượn test');
+        return;
+      }
+
+      const firstDevice = devicesResponse.data.data[0];
+
+      // Tạo test request với device thật
+      const testRequestData = {
+        deviceId: firstDevice._id,
+        borrowDate: new Date().toISOString(),
+        returnDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        purpose: 'Test borrow request được tạo từ admin panel',
+        note: 'Đây là dữ liệu test được tạo tự động',
+      };
+
+      console.log('Creating test request with data:', testRequestData);
+
+      const response = await axios.post('/user/borrow-requests', testRequestData);
+      console.log('Test request created:', response.data);
+
+      message.success('Đã tạo yêu cầu mượn test thành công trong database!');
+
+      // Refresh data
+      await fetchRequests();
+
+    } catch (error: any) {
+      console.error('Error creating test data:', error);
+      message.error('Không thể tạo dữ liệu test: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  // Initialize data with delay để đảm bảo auth đã được set
   useEffect(() => {
-    fetchRequests();
+    const timer = setTimeout(() => {
+      fetchRequests();
+    }, 100); // Small delay to ensure auth is loaded
+
+    return () => clearTimeout(timer);
   }, [pagination.current, pagination.pageSize, searchKeyword, dateRange, deviceFilter]);
 
   // Get status tag
@@ -327,6 +388,13 @@ const PendingBorrowRequests: React.FC = () => {
     <div style={{ padding: 24 }}>
       <Title level={2}>Yêu cầu mượn chờ duyệt</Title>
 
+      {/* Debug info */}
+      <div style={{ marginBottom: 16, padding: '8px 12px', backgroundColor: '#f0f2f5', borderRadius: 4 }}>
+        <span style={{ fontSize: 12, color: '#666' }}>
+          Debug: Requests in state: {requests.length}, Total from API: {pagination.total}, Loading: {loading ? 'Yes' : 'No'}
+        </span>
+      </div>
+
       {/* Statistics */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
@@ -368,6 +436,32 @@ const PendingBorrowRequests: React.FC = () => {
       </Row>
 
       <Card>
+        {/* Enhanced header with data status */}
+        <div style={{ marginBottom: 16, padding: '8px 12px', backgroundColor: requests.length > 0 ? '#f6ffed' : '#fff2e8', borderRadius: 4 }}>
+          <Row justify="space-between" align="middle">
+            <Col>
+              <span style={{ fontSize: 12, color: '#666' }}>
+                {requests.length > 0 ?
+                  `✅ Đang hiển thị ${requests.length} yêu cầu từ API` :
+                  '📝 Chưa có dữ liệu - API trả về array rỗng'
+                }
+              </span>
+            </Col>
+            {requests.length === 0 && (
+              <Col>
+                <Button
+                  size="small"
+                  type="primary"
+                  ghost
+                  onClick={handleCreateTestData}
+                >
+                  Tạo dữ liệu test
+                </Button>
+              </Col>
+            )}
+          </Row>
+        </div>
+
         {/* Filters */}
         <div style={{ marginBottom: 16 }}>
           <Row gutter={16}>
@@ -408,7 +502,7 @@ const PendingBorrowRequests: React.FC = () => {
           </Row>
         </div>
 
-        {/* Table */}
+        {/* Table với enhanced debug info */}
         <Table
           columns={columns}
           dataSource={requests}
@@ -420,10 +514,31 @@ const PendingBorrowRequests: React.FC = () => {
             total: pagination.total,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} yêu cầu`,
+            showTotal: (total, range) => {
+              console.log('Table pagination render - Total:', total, 'Range:', range, 'Actual data:', requests.length);
+              return `${range[0]}-${range[1]} của ${total} yêu cầu (hiển thị: ${requests.length})`;
+            },
           }}
           onChange={handleTableChange}
           scroll={{ x: 1200 }}
+          locale={{
+            emptyText: loading ? 'Đang tải dữ liệu...' : (
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <p>API đã trả về thành công nhưng data array rỗng</p>
+                <p style={{ fontSize: 12, color: '#666', marginTop: 8 }}>
+                  Backend message: "Lấy danh sách yêu cầu mượn thành công" nhưng data.data.data = []
+                </p>
+                <Space>
+                  <Button type="link" onClick={fetchRequests}>
+                    Thử tải lại
+                  </Button>
+                  <Button type="primary" ghost onClick={handleCreateTestData}>
+                    Tạo dữ liệu test
+                  </Button>
+                </Space>
+              </div>
+            ),
+          }}
         />
       </Card>
 

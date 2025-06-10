@@ -15,21 +15,30 @@ const instance = axios.create({
 // Add a request interceptor
 instance.interceptors.request.use(
 	(config) => {
-		console.log('🚀 Axios Request:', {
-			url: config.url,
-			method: config.method?.toUpperCase(),
-			baseURL: config.baseURL,
-			fullURL: `${config.baseURL}${config.url}`,
-		});
+		console.log('🚀 Axios Request Details:');
+		console.log('  URL:', config.url);
+		console.log('  Method:', config.method?.toUpperCase());
+		console.log('  Base URL:', config.baseURL);
+		console.log('  Full URL:', `${config.baseURL}${config.url}`);
+		console.log('  Params:', config.params);
+		console.log('  Data:', config.data);
 
 		// Lấy token từ localStorage
 		const token = localStorage.getItem('token');
+		const role = localStorage.getItem('role');
+
+		console.log('  Auth Info:');
+		console.log('    Token exists:', !!token);
+		console.log('    User role:', role);
+		console.log('    Token preview:', token ? token.substring(0, 50) + '...' : 'No token');
+
 		if (token) {
 			config.headers.Authorization = `Bearer ${token}`;
-			console.log('✅ Token added to request');
+			console.log('  ✅ Authorization header added');
 		} else {
-			console.log('❌ No token found');
+			console.log('  ❌ No token found - request may fail');
 		}
+
 		return config;
 	},
 	(error) => {
@@ -41,20 +50,47 @@ instance.interceptors.request.use(
 // Add a response interceptor
 instance.interceptors.response.use(
 	(response) => {
-		console.log('✅ Axios Response:', {
-			url: response.config.url,
-			status: response.status,
-			data: response.data,
-		});
+		console.log('✅ Axios Response Details:');
+		console.log('  URL:', response.config.url);
+		console.log('  Status:', response.status, response.statusText);
+		console.log('  Response Headers:', response.headers);
+		console.log('  Response Data Type:', typeof response.data);
+		console.log('  Response Data:', response.data);
+
+		// Log data structure details
+		if (response.data && typeof response.data === 'object') {
+			console.log('  Response Structure:');
+			console.log('    Keys:', Object.keys(response.data));
+			console.log('    Is Array:', Array.isArray(response.data));
+
+			if (Array.isArray(response.data)) {
+				console.log('    Array Length:', response.data.length);
+				if (response.data.length > 0) {
+					console.log('    First Item:', response.data[0]);
+				}
+			}
+		}
+
 		return response;
 	},
 	(error) => {
-		console.error('❌ Axios Error:', {
-			url: error.config?.url,
-			status: error.response?.status,
-			data: error.response?.data,
-			message: error.message,
-		});
+		console.error('❌ Axios Response Error Details:');
+		console.error('  URL:', error.config?.url);
+		console.error('  Method:', error.config?.method?.toUpperCase());
+		console.error('  Status:', error.response?.status);
+		console.error('  Status Text:', error.response?.statusText);
+		console.error('  Error Data:', error.response?.data);
+		console.error('  Error Message:', error.message);
+		console.error('  Request Headers:', error.config?.headers);
+
+		// Handle specific error cases
+		if (error.response?.status === 401) {
+			console.error('🚫 Unauthorized - Token may be invalid or expired');
+		} else if (error.response?.status === 404) {
+			console.error('🔍 Not Found - Endpoint may not exist');
+		} else if (error.response?.status === 500) {
+			console.error('💥 Server Error - Backend issue');
+		}
 
 		const er = error?.response?.data;
 		let descriptionError = 'Có lỗi xảy ra';

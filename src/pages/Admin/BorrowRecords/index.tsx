@@ -38,7 +38,7 @@ import {
   getBorrowRecordStatistics,
   sendReminderEmail,
   BorrowRecord,
-  BorrowRecordParams,
+  BorrowRecordQuery,
   BorrowRecordStatistics,
 } from '@/services/admin/borrow-record.service';
 import { approveRequest, rejectRequest } from '@/services/admin/borrow-request.service';
@@ -68,17 +68,31 @@ const BorrowRecordsManagement: React.FC = () => {
     total: 0,
   });
 
-  // Fetch records and statistics
+  // Fetch records and statistics với validation
   const fetchRecords = async () => {
     setLoading(true);
-    try {
-      console.log('=== FETCHING BORROW RECORDS ===');
+    console.log('=== FETCHING BORROW RECORDS ===');
 
-      const params: any = {
+    try {
+      // Validate auth
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+
+      if (!token) {
+        message.error('Phiên đăng nhập đã hết hạn');
+        return;
+      }
+
+      if (role !== 'admin') {
+        message.error('Không có quyền truy cập');
+        return;
+      }
+
+      const params: BorrowRecordQuery = {
         current: pagination.current,
         pageSize: pagination.pageSize,
-        keyword: searchKeyword,
-        status: statusFilter,
+        keyword: searchKeyword.trim() || undefined,
+        status: statusFilter || undefined,
       };
 
       if (dateRange && dateRange.length === 2) {
@@ -86,51 +100,38 @@ const BorrowRecordsManagement: React.FC = () => {
         params.endDate = dateRange[1].format('YYYY-MM-DD');
       }
 
+      console.log('Fetching borrow records with params:', params);
+
       const response = await getAllBorrowRecords(params);
 
       console.log('Borrow records response:', response);
       console.log('Records data:', response.data);
-      console.log('Statistics:', response.statistics);
 
-      setRecords(response.data || []);
+      if (!response || !Array.isArray(response.data)) {
+        console.error('Invalid response structure:', response);
+        throw new Error('Invalid response from server');
+      }
+
+      setRecords(response.data);
       setPagination(prev => ({
         ...prev,
         total: response.total || 0,
       }));
 
-      // Safe access to statistics
+      // Set statistics from response
       if (response.statistics) {
+        console.log('Using provided statistics:', response.statistics);
         setStatistics(response.statistics);
-      } else {
-        // Calculate statistics from data if not provided
-        const records = response.data || [];
-        const today = new Date();
-
-        const calculatedStats = {
-          totalBorrowed: records.filter(r => r.status === 'borrowed').length,
-          totalReturned: records.filter(r => r.status === 'returned').length,
-          totalOverdue: records.filter(r => {
-            if (r.status === 'returned') return false;
-            const dueDate = new Date(r.returnDate);
-            return today > dueDate;
-          }).length,
-          dueSoon: records.filter(r => {
-            if (r.status === 'returned') return false;
-            const dueDate = new Date(r.returnDate);
-            const diffDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-            return diffDays >= 0 && diffDays <= 3;
-          }).length,
-        };
-
-        console.log('Calculated statistics:', calculatedStats);
-        setStatistics(calculatedStats);
       }
 
-    } catch (error) {
-      console.error('Error fetching borrow records:', error);
-      message.error('Không thể lấy danh sách mượn trả');
+      if (response.data.length === 0) {
+        message.info('Không có bản ghi mượn trả nào');
+      }
 
-      // Set empty data on error
+    } catch (error: any) {
+      console.error('Error fetching borrow records:', error);
+
+      // Reset state on error
       setRecords([]);
       setPagination(prev => ({ ...prev, total: 0 }));
       setStatistics({
@@ -139,13 +140,20 @@ const BorrowRecordsManagement: React.FC = () => {
         totalOverdue: 0,
         dueSoon: 0,
       });
+
+      if (error.message?.includes('token')) {
+        message.error('Phiên đăng nhập đã hết hạn');
+      } else {
+        message.error('Không thể lấy danh sách mượn trả: ' + (error.message || 'Lỗi không xác định'));
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRecords();
+    const timer = setTimeout(fetchRecords, 100);
+    return () => clearTimeout(timer);
   }, [pagination.current, pagination.pageSize, searchKeyword, dateRange, statusFilter]);
 
   // Get status tag

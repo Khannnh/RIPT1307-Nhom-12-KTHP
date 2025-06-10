@@ -48,15 +48,26 @@ const ApprovedBorrowRequests: React.FC = () => {
     total: 0,
   });
 
-  // Fetch approved requests
+  // Fetch approved requests với validation
   const fetchRequests = async () => {
     setLoading(true);
+    console.log('=== FETCHING APPROVED REQUESTS ===');
+
     try {
+      // Validate auth
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+
+      if (!token || role !== 'admin') {
+        message.error('Không có quyền truy cập');
+        return;
+      }
+
       const params: BorrowRequestParams = {
         current: pagination.current,
         pageSize: pagination.pageSize,
-        status: 'approved',
-        keyword: searchKeyword,
+        status: 'approved', // Chỉ lấy approved requests
+        keyword: searchKeyword.trim() || undefined,
       };
 
       if (dateRange && dateRange.length === 2) {
@@ -65,12 +76,28 @@ const ApprovedBorrowRequests: React.FC = () => {
       }
 
       const response = await getAllBorrowRequests(params);
-      setRequests(response.data);
-      setPagination({
-        ...pagination,
-        total: response.total,
-      });
-    } catch (error) {
+
+      if (!response || !Array.isArray(response.data)) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Filter approved requests
+      const approvedRequests = response.data.filter(req => req.status === 'approved');
+
+      setRequests(approvedRequests);
+      setPagination(prev => ({
+        ...prev,
+        total: response.total || approvedRequests.length,
+      }));
+
+      if (approvedRequests.length === 0) {
+        message.info('Không có yêu cầu đã duyệt nào');
+      }
+
+    } catch (error: any) {
+      console.error('Error fetching approved requests:', error);
+      setRequests([]);
+      setPagination(prev => ({ ...prev, total: 0 }));
       message.error('Không thể tải danh sách yêu cầu đã duyệt');
     } finally {
       setLoading(false);
@@ -78,7 +105,8 @@ const ApprovedBorrowRequests: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchRequests();
+    const timer = setTimeout(fetchRequests, 100);
+    return () => clearTimeout(timer);
   }, [pagination.current, pagination.pageSize, searchKeyword, dateRange]);
 
   // Get status tag
