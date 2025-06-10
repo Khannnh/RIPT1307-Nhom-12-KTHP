@@ -84,81 +84,73 @@ type Device = {
   percentage: string;
 };
 
-const mockDeviceTableData: Device[] = [
-  { rank: 1, name: 'Laptop Dell XPS 13', category: 'Máy tính xách tay', borrows: 180, percentage: '20.1%' },
-  { rank: 2, name: 'iPad Pro 12.9"', category: 'Máy tính bảng', borrows: 152, percentage: '16.9%' },
-  { rank: 3, name: 'Canon EOS R5', category: 'Máy ảnh', borrows: 128, percentage: '14.3%' },
-  { rank: 4, name: 'Macbook Air M2', category: 'Máy tính xách tay', borrows: 112, percentage: '12.5%' },
-  { rank: 5, name: 'Surface Pro 9', category: 'Máy tính bảng', borrows: 100, percentage: '11.1%' },
-  { rank: 6, name: 'iPhone 14 Pro', category: 'Điện thoại', borrows: 88, percentage: '9.8%' },
-  { rank: 7, name: 'Sony A7 IV', category: 'Máy ảnh', borrows: 76, percentage: '8.5%' },
-  { rank: 8, name: 'Lenovo ThinkPad X1', category: 'Máy tính xách tay', borrows: 61, percentage: '6.8%' },
-];
-
-// Define categoryFilters for mock data
-const categoryFilters = Array.from(new Set(mockDeviceTableData.map(d => d.category))).map(category => ({
-  text: category,
-  value: category,
-}));
-
-const columns = [
-  {
-    title: 'Hạng',
-    dataIndex: 'rank',
-    key: 'rank',
-    sorter: (a: Device, b: Device) => a.rank - b.rank,
-    render: (rank: number) => <b>#{rank}</b>,
-  },
-  {
-    title: 'Tên Thiết Bị',
-    dataIndex: 'name',
-    key: 'name',
-    filters: mockDeviceTableData.map(d => ({ text: d.name, value: d.name })),
-    onFilter: (value: string | number | boolean, record: Device) => record.name.indexOf(value as string) === 0,
-  },
-  {
-    title: 'Danh Mục',
-    dataIndex: 'category',
-    key: 'category',
-    filters: categoryFilters,
-    onFilter: (value: string | number | boolean, record: Device) => record.category === value,
-    render: (category: string) => <Tag color="blue">{category}</Tag>,
-  },
-  {
-    title: 'Số Lượt Mượn',
-    dataIndex: 'borrows',
-    key: 'borrows',
-    sorter: (a: Device, b: Device) => a.borrows - b.borrows,
-  },
-  {
-    title: 'Tỷ Lệ',
-    dataIndex: 'percentage',
-    key: 'percentage',
-    sorter: (a: Device, b: Device) => parseFloat(a.percentage) - parseFloat(b.percentage),
-  },
-];
-
-// Hàm xuất Excel
-const exportToExcel = () => {
-  const ws = XLSX.utils.json_to_sheet(mockDeviceTableData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Thống kê thiết bị');
-  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
-  saveAs(data, 'thong_ke_thiet_bi.xlsx');
-};
-
 const DeviceStatisticsPage: React.FC = () => {
+  const { totalBorrows } = useStatistic();
+  const { devices: topBorrowedDevices } = useTopBorrowedDevices();
+  const topDevice = topBorrowedDevices[0];
+  const popularDevice = topDevice ? topDevice.deviceName : '---';
+  const popularDeviceBorrows = topDevice ? topDevice.borrowCount : 0;
+  // Lấy số lượng thiết bị theo danh mục
+  const categoryCount = useDeviceCategoryCount();
+  const uniqueDeviceTypes = Object.keys(categoryCount).length;
+  const { tableData, loading } = useBorrowedDeviceTable();
 
-    const { totalBorrows } = useStatistic();
-    const { devices: topBorrowedDevices } = useTopBorrowedDevices();
-    const topDevice = topBorrowedDevices[0];
-    const popularDevice = topDevice ? topDevice.deviceName : '---';
-    const popularDeviceBorrows = topDevice ? topDevice.borrowCount : 0;
-    // Lấy số lượng thiết bị theo danh mục
-    const categoryCount = useDeviceCategoryCount();
-    const uniqueDeviceTypes = Object.keys(categoryCount).length;
-    const { tableData, loading } = useBorrowedDeviceTable();
+  // Tạo filters động từ tableData
+  const categoryFilters = Array.from(new Set(tableData.map(d => d.category))).map(category => ({
+    text: category,
+    value: category,
+  }));
+  const nameFilters = Array.from(new Set(tableData.map(d => d.name))).map(name => ({
+    text: name,
+    value: name,
+  }));
+
+  const columns = [
+    {
+      title: 'Hạng',
+      dataIndex: 'rank',
+      key: 'rank',
+      sorter: (a: Device, b: Device) => a.rank - b.rank,
+      render: (rank: number) => <b>#{rank}</b>,
+    },
+    {
+      title: 'Tên Thiết Bị',
+      dataIndex: 'name',
+      key: 'name',
+      filters: nameFilters,
+      onFilter: (value: string | number | boolean, record: Device) => record.name.indexOf(value as string) === 0,
+    },
+    {
+      title: 'Danh Mục',
+      dataIndex: 'category',
+      key: 'category',
+      filters: categoryFilters,
+      onFilter: (value: string | number | boolean, record: Device) => record.category === value,
+      render: (category: string) => <Tag color="blue">{category}</Tag>,
+    },
+    {
+      title: 'Số Lượt Mượn',
+      dataIndex: 'borrows',
+      key: 'borrows',
+      sorter: (a: Device, b: Device) => a.borrows - b.borrows,
+    },
+    {
+      title: 'Tỷ Lệ',
+      dataIndex: 'percentage',
+      key: 'percentage',
+      sorter: (a: Device, b: Device) => parseFloat(a.percentage) - parseFloat(b.percentage),
+    },
+  ];
+
+  // Hàm xuất Excel
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(tableData.map((item: Device) => item));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Thống kê thiết bị');
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(data, 'thong_ke_thiet_bi.xlsx');
+  };
 
   return (
     <div className="device-statistics-page-container">
@@ -183,7 +175,7 @@ const DeviceStatisticsPage: React.FC = () => {
         <Table
           columns={columns}
           dataSource={tableData}
-          loading = {loading}
+          loading={loading}
           rowKey="rank"
           pagination={{ pageSize: 5 }}
         />
