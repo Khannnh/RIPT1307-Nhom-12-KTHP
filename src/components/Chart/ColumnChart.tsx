@@ -65,7 +65,8 @@ const ColumnChart = (props: DataChartType) => {
 		},
 		yaxis: {
 			labels: {
-				formatter: (val: number) => (formatY ? formatY(val) : tienVietNam(val)),
+				//formatter: (val: number) => (formatY ? formatY(val) : tienVietNam(val)),
+				formatter: (val: number) => (formatY ? String(formatY(val)) : String(val)), // luôn trả về string, không dùng tienVietNam
 			},
 		},
 		xaxis: {
@@ -73,7 +74,8 @@ const ColumnChart = (props: DataChartType) => {
 		},
 		tooltip: {
 			y: {
-				formatter: (val: number) => (formatY ? formatY(val) : tienVietNam(val)),
+				//formatter: (val: number) => (formatY ? formatY(val) : tienVietNam(val)),
+				formatter: (val: number) => (formatY ? String(formatY(val)) : String(val)), // luôn trả về string
 			},
 		},
 	};

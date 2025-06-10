@@ -30,7 +30,8 @@ const DonutChart = (props: DataChartType) => {
 		],
 		tooltip: {
 			y: {
-				formatter: (val: number) => (formatY ? formatY(val) : tienVietNam(val)),
+				//formatter: (val: number) => (formatY ? formatY(val) : tienVietNam(val)),
+				formatter: (val: number) => (formatY ? String(formatY(val)) : String(val)), // luôn trả về string, không dùng tienVietNam
 			},
 		},
 		colors,
@@ -47,7 +48,8 @@ const DonutChart = (props: DataChartType) => {
 							label: 'Tổng số',
 							formatter: (w: any) => {
 								const val = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
-								return formatY ? formatY(val) : tienVietNam(val);
+								//return formatY ? formatY(val) : tienVietNam(val);
+								return formatY ? String(formatY(val)) : String(val); // luôn trả về string, không dùng tienVietNam
 							},
 						},
 					},
