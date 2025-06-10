@@ -77,7 +77,7 @@ const UserModel: UserModelType = {
         // (tức là adminResponse.data là { message: "...", data: { access_token: "..." } })
         // Nếu vậy, bạn cần truy cập adminResponse.data.data.access_token
 
-        // CÁCH 2: Nếu console log "Raw adminResponse from loginAdmin service:" là đúng, và `adminResponse.data.data` là rỗng,
+        // C 2: Nếu console log "Raw adminResponse from loginAdmin service:" là đúng, và `adminResponse.data.data` là rỗng,
         // thì có lẽ `access_token` và `user` nằm trực tiếp trong `adminResponse.data`.
         // Dựa vào ảnh Postman, đó là {"message": "Đăng nhập thành công", "data": {"access_token": "...", ...}}.
         // VẬY, adminResponse.data.data.access_token là ĐÚNG theo Postman.

@@ -58,7 +58,7 @@ const BasicLayout: React.FC = ({ children }) => {
     {
       key: '/devices',
       icon: <AppstoreOutlined />,
-      label: <Link to="/devices">Quản lý thiết bị</Link>,
+      label: <Link to="/devices">Thiết bị có sẵn</Link>,
     },
     {
       key: '/statistics',
