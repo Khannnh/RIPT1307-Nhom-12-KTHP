@@ -7,7 +7,8 @@ export function useStatistic() {
   useEffect(() => {
     const fetchData = async () => {
       const records = await borrowRecordService.getAllBorrowRecords();
-      setTotalBorrows(records.length); // records là mảng, length là tổng lượt mượn
+      const approvedRecords = records.filter((item: any) => item.status === 'approved');
+      setTotalBorrows(approvedRecords.length); // records là mảng, length là tổng lượt mượn
     };
     fetchData();
   }, []);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStatistic } from '@/hooks/useStatistic';
 import { useTopBorrowedDevices } from '@/hooks/useTopBorrow';
+import { useDeviceCategoryCount } from '@/hooks/useDevice';
 import { Table, Tag, Button } from 'antd';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -152,7 +153,9 @@ const DeviceStatisticsPage: React.FC = () => {
     const topDevice = topBorrowedDevices[0];
     const popularDevice = topDevice ? topDevice.deviceName : '---';
     const popularDeviceBorrows = topDevice ? topDevice.borrowCount : 0;
-    const uniqueDeviceTypes = new Set(mockDeviceTableData.map(d => d.category)).size;
+    // Lấy số lượng thiết bị theo danh mục
+    const categoryCount = useDeviceCategoryCount();
+    const uniqueDeviceTypes = Object.keys(categoryCount).length;
 
   return (
     <div className="device-statistics-page-container">

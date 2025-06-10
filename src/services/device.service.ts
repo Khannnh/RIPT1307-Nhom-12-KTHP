@@ -77,3 +77,9 @@ export const updateDevice = async (id: string, device: Partial<Omit<Device, 'id'
 export const deleteDevice = async (id: string): Promise<void> => {
   await axios.delete(`/user/devices/${id}`);
 };
+//admin 
+// Chỉ trả về danh sách thiết bị
+export const getAdminDevices = async (): Promise<Device[]> => {
+  const response = await axios.get('/admin/devices');
+  return response.data.data;
+};
