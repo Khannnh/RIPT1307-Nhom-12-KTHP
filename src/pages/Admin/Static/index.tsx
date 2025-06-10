@@ -31,12 +31,12 @@ const HeroSection: React.FC<{
 }) => (
   <div className="hero-section-wrapper" style={{ marginBottom: 32 }}>
     <div className="time-filter-section" style={{ marginBottom: 24 }}>
-      <span style={{ marginRight: 8 }}>📅 Bộ lọc thời gian:</span>
+      <span style={{ marginRight: 8 , fontSize: 38}}>📅 Bộ lọc thời gian:</span>
       <select
         className="filter-dropdown"
         value={selectedMonth}
         onChange={e => setSelectedMonth(Number(e.target.value))}
-        style={{ marginRight: 8 }}
+        style={{ marginRight: 8 , fontSize: 28}}
       >
         {[...Array(12)].map((_, i) => (
           <option key={i + 1} value={i + 1}>
@@ -47,6 +47,7 @@ const HeroSection: React.FC<{
       <select
         className="filter-dropdown"
         value={selectedYear}
+        style={{ marginRight: 8 , fontSize: 28}}
         onChange={e => setSelectedYear(Number(e.target.value))}
       >
         {[2023, 2024, 2025].map(y => (
@@ -56,11 +57,11 @@ const HeroSection: React.FC<{
         ))}
       </select>
     </div>
-    <div className="hero-cards-container" style={{ display: 'flex', gap: 24 }}>
+    <div className="hero-cards-container" style={{ display: 'flex', gap: 24 , fontSize: 20 }}>
       <div className="card" style={{ flex: 1, background: '#b3e0ff', borderRadius: 12, padding: 16 }}>
         <div className="card-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           <h3 style={{ flex: 1, margin: 0 }}>Tổng Lượt Mượn</h3>
-          <span className="icon">📈</span>
+          <span className="icon" >📈</span>
         </div>
         <p className="card-value" style={{ fontSize: 28, fontWeight: 600 }}>{totalBorrows}</p>
         <p className="card-description" style={{ color: '#888' }}>
@@ -183,12 +184,12 @@ const DeviceStatisticsPage: React.FC = () => {
 
       <div style={{ marginBottom: 16 }}>
         <Button type="primary" onClick={exportToExcel}>
-          Xuất Excel
+          Xuất File Excel
         </Button>
       </div>
       <div className="device-table-container">
         <div className="table-header">
-          <h3>Bảng Chi Tiết Thống Kê</h3>
+          <h3 style={{ margin: 'center', fontSize: 28 }}>Bảng Chi Tiết Thống Kê</h3>
           <p>Danh sách thiết bị được mượn trong Tháng {selectedMonth}/{selectedYear}</p>
         </div>
         <Table
@@ -199,9 +200,9 @@ const DeviceStatisticsPage: React.FC = () => {
           pagination={{ pageSize: 5 }}
         />
       </div>
-      <div className="charts-container" style={{ marginTop: 32 }}>
+      <div className="charts-container" style={{ marginTop: 32 , display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div className="chart-item" style={{ marginBottom: 32 }}>
-          <h2>Biểu đồ cột</h2>
+          <h2 style={{ marginRight: 8 , fontSize: 28}}>Biểu đồ cột</h2>
           <ColumnChart
             title="Số lượt mượn theo thiết bị"
             xAxis={tableData.map(d => d.name)}
@@ -213,7 +214,7 @@ const DeviceStatisticsPage: React.FC = () => {
           />
         </div>
         <div className="chart-item">
-          <h2>Biểu đồ tròn</h2>
+          <h2 style={{ marginRight: 8 , fontSize: 28}}>Biểu đồ tròn</h2>
           <DonutChart
             title="Tỷ lệ mượn theo thiết bị"
             xAxis={tableData.map(d => d.name)}
