@@ -2,6 +2,7 @@ import React from 'react';
 import { useStatistic } from '@/hooks/useStatistic';
 import { useTopBorrowedDevices } from '@/hooks/useTopBorrow';
 import { useDeviceCategoryCount } from '@/hooks/useDevice';
+import { useBorrowedDeviceTable } from '@/hooks/useTable';
 import { Table, Tag, Button } from 'antd';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -94,6 +95,12 @@ const mockDeviceTableData: Device[] = [
   { rank: 8, name: 'Lenovo ThinkPad X1', category: 'Máy tính xách tay', borrows: 61, percentage: '6.8%' },
 ];
 
+// Define categoryFilters for mock data
+const categoryFilters = Array.from(new Set(mockDeviceTableData.map(d => d.category))).map(category => ({
+  text: category,
+  value: category,
+}));
+
 const columns = [
   {
     title: 'Hạng',
@@ -113,12 +120,7 @@ const columns = [
     title: 'Danh Mục',
     dataIndex: 'category',
     key: 'category',
-    filters: [
-      { text: 'Máy tính xách tay', value: 'Máy tính xách tay' },
-      { text: 'Máy tính bảng', value: 'Máy tính bảng' },
-      { text: 'Máy ảnh', value: 'Máy ảnh' },
-      { text: 'Điện thoại', value: 'Điện thoại' },
-    ],
+    filters: categoryFilters,
     onFilter: (value: string | number | boolean, record: Device) => record.category === value,
     render: (category: string) => <Tag color="blue">{category}</Tag>,
   },
@@ -156,6 +158,7 @@ const DeviceStatisticsPage: React.FC = () => {
     // Lấy số lượng thiết bị theo danh mục
     const categoryCount = useDeviceCategoryCount();
     const uniqueDeviceTypes = Object.keys(categoryCount).length;
+    const { tableData, loading } = useBorrowedDeviceTable();
 
   return (
     <div className="device-statistics-page-container">
@@ -179,7 +182,8 @@ const DeviceStatisticsPage: React.FC = () => {
         </div>
         <Table
           columns={columns}
-          dataSource={mockDeviceTableData}
+          dataSource={tableData}
+          loading = {loading}
           rowKey="rank"
           pagination={{ pageSize: 5 }}
         />
@@ -189,8 +193,8 @@ const DeviceStatisticsPage: React.FC = () => {
           <h2>Biểu đồ cột</h2>
           <ColumnChart
             title="Số lượt mượn theo thiết bị"
-            xAxis={mockDeviceTableData.map(d => d.name)}
-            yAxis={[mockDeviceTableData.map(d => d.borrows)]}
+            xAxis={tableData.map(d => d.name)}
+            yAxis={[tableData.map(d => d.borrows)]}
             yLabel={['Số lượt mượn']}
             height={350}
             width={1000}
@@ -201,8 +205,8 @@ const DeviceStatisticsPage: React.FC = () => {
           <h2>Biểu đồ tròn</h2>
           <DonutChart
             title="Tỷ lệ mượn theo thiết bị"
-            xAxis={mockDeviceTableData.map(d => d.name)}
-            yAxis={[mockDeviceTableData.map(d => d.borrows)]}
+            xAxis={tableData.map(d => d.name)}
+            yAxis={[tableData.map(d => d.borrows)]}
             yLabel={['Tỷ lệ']}
             height={350}
             width={1000}
