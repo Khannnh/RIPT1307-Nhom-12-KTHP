@@ -1,6 +1,6 @@
-import './Hero.less';
-import muonDoImage from '@/assets/devices.jpg';
 
+import muonDoImage from '@/assets/devices.jpg';
+import './Hero.less';
 // import { useHero } from './useHero';
 
 const Hero = () => {

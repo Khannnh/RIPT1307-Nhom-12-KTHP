@@ -150,44 +150,7 @@ const HomePage: React.FC = () => {
             <Input placeholder="Nhập email của bạn" className="email-input" />
           </div>
         </div>
-        <div className="hero-images">
-          {/* Placeholder for floating device cards */}
-          <div className="floating-card ipad-pro">
-            <Card>
-              <VideoCameraOutlined />
-              <p>iPad Pro</p>
-              <span>Available</span>
-            </Card>
-          </div>
-          <div className="floating-card projector">
-            <Card>
-              <AppstoreOutlined />
-              <p>Projector</p>
-              <span>Available</span>
-            </Card>
-          </div>
-          <div className="floating-card printer">
-            <Card>
-              <SolutionOutlined />
-              <p>Printer</p>
-              <span>Available</span>
-            </Card>
-          </div>
-          <div className="floating-card camera">
-            <Card>
-              <CameraOutlined />
-              <p>Camera</p>
-              <span>Available</span>
-            </Card>
-          </div>
-          <div className="floating-card headphone">
-            <Card>
-              <AudioOutlined />
-              <p>Headphone</p>
-              <span>Available</span>
-            </Card>
-          </div>
-        </div>
+        
       </div>
 
       {/* Thiết Bị Được Mượn Nhiều Nhất */}
