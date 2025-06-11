@@ -21,6 +21,7 @@ const { Content } = Layout;
 const ProfilePage: React.FC = () => {
   const { initialState } = useModel('@@initialState');
   const [userData, setUserData] = useState<any>(null);
+  console.log('Initial State:', userData);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
@@ -63,7 +64,7 @@ const ProfilePage: React.FC = () => {
       console.log('Full Profile API Response:', response);
 
       console.log('Processed Profile Data:', response);
-      setUserData(response.data || response);
+      setUserData(response.data.data || response);
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       message.error('Không thể tải thông tin người dùng');

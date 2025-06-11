@@ -1,4 +1,6 @@
-﻿export default [
+﻿import { layout } from "@/app";
+
+export default [
 	// Root redirect first
 	{
 		path: '/',
@@ -35,6 +37,7 @@
 		component: '@/layouts/BasicLayout',
 		wrappers: ['@/middleware/auth'],
 		authority: ['admin'],
+    layout: false,
 		routes: [
 			{
 				path: '/admin/dashboard',
@@ -75,6 +78,7 @@
 		component: '@/layouts/BasicLayout',
 		wrappers: ['@/middleware/auth'],
 		authority: ['user'],
+    layout: false,
 		routes: [
 			{
 				path: '/app/dashboard',

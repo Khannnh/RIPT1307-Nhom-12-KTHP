@@ -48,6 +48,9 @@ export interface BorrowRecordQuery {
   startDate?: string;
   endDate?: string;
   deviceId?: string;
+  userId?: string;
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface BorrowRecordResponse {
@@ -59,122 +62,95 @@ interface BorrowRecordResponse {
 }
 
 // Lấy tất cả bản ghi mượn trả - Sửa để parse đúng nested structure
-export const getAllBorrowRecords = async (params: BorrowRecordParams = {}): Promise<BorrowRecordResponse> => {
+export const getAllBorrowRecords = async (params: BorrowRecordQuery = {}): Promise<BorrowRecordResponse> => {
   try {
     console.log('=== BORROW RECORD SERVICE CALL START ===');
-    console.log('Input params:', params);
 
-    // Check authentication first
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+    // Thử endpoint chính trước
+    let response;
+    try {
+      response = await axios.get('/admin/borrow-records', {
+        params: {
+          page: params.current,
+          limit: params.pageSize,
+          status: params.status,
+          keyword: params.keyword,
+          startDate: params.startDate,
+          endDate: params.endDate,
+          userId: params.userId,
+          deviceId: params.deviceId,
+        }
+      });
+      console.log('✅ Main borrow-records endpoint works');
+    } catch (error) {
+      console.log('❌ Main endpoint failed, trying approved requests');
 
-    if (!token || role !== 'admin') {
-      throw new Error('Authentication required');
+      // Fallback: lấy approved requests và map thành records
+      response = await axios.get('/admin/borrow-requests', {
+        params: {
+          status: 'approved', // Chỉ lấy approved requests
+          keyword: params.keyword,
+          startDate: params.startDate,
+          endDate: params.endDate,
+        }
+      });
     }
 
-    // Sử dụng borrow requests với status approved để lấy records
-    console.log('Making API call to /admin/borrow-requests (approved status)');
+    console.log('Raw response:', response.data);
 
-    const response = await axios.get('/admin/borrow-requests', {
-      params: {
-        page: params.current,
-        limit: params.pageSize,
-        status: 'approved', // Chỉ lấy các request đã được duyệt
-        keyword: params.keyword,
-        startDate: params.startDate,
-        endDate: params.endDate,
-      }
-    });
-
-    console.log('=== RAW API RESPONSE ===');
-    console.log('Status:', response.status);
-    console.log('Response data:', response.data);
-
-    // Handle different response structures - Same logic as borrow-request
-    let records = [];
+    // Parse response data
+    let recordData = [];
     let total = 0;
 
-    if (response.data) {
-      // Case 1: Nested structure {message: "...", data: {data: [...], total: ...}}
-      if (response.data.message && response.data.data && Array.isArray(response.data.data.data)) {
-        console.log('✅ Found nested backend response format');
-        records = response.data.data.data;
-        total = response.data.data.total || records.length;
-      }
-      // Case 2: Standard format {message: "...", data: [...]}
-      else if (response.data.message && Array.isArray(response.data.data)) {
-        console.log('✅ Found standard backend response format');
-        records = response.data.data;
-        total = response.data.total || records.length;
-      }
-      // Case 3: Direct array
-      else if (Array.isArray(response.data)) {
-        records = response.data;
-        total = records.length;
-      }
-      // Case 4: Object with data property
-      else if (response.data.data && Array.isArray(response.data.data)) {
-        records = response.data.data;
-        total = response.data.total || records.length;
-      }
-      else {
-        console.log('❌ Unknown response structure');
-        console.log('Response keys:', Object.keys(response.data));
-
-        // Try to find array in nested structure
-        if (response.data.data && typeof response.data.data === 'object') {
-          for (const key of Object.keys(response.data.data)) {
-            if (Array.isArray(response.data.data[key])) {
-              console.log(`✅ Found array in nested key: data.${key}`);
-              records = response.data.data[key];
-              total = records.length;
-              break;
-            }
-          }
-        }
+    if (response.data?.data) {
+      if (Array.isArray(response.data.data)) {
+        recordData = response.data.data;
+        total = response.data.total || recordData.length;
       }
     }
 
-    console.log('=== PROCESSED RESULTS ===');
-    console.log('Records found:', records.length);
+    // Map approved requests to borrow records format
+    const mappedRecords = recordData.map((item: any) => {
+      // Nếu đây là borrow request, map sang borrow record
+      if (item.status === 'approved' || !item.borrowRequestId) {
+        return {
+          _id: item._id,
+          borrowRequestId: item._id,
+          userId: item.userId || item.user?._id,
+          deviceId: item.deviceId || item.device?._id,
+          borrowDate: item.borrowDate,
+          returnDate: item.returnDate,
+          actualReturnDate: item.actualReturnDate || null,
+          status: item.actualReturnDate ? 'returned' : 'borrowed',
+          note: item.note || '',
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          borrowRequest: {
+            _id: item._id,
+            purpose: item.purpose || 'No purpose',
+            note: item.note || '',
+          },
+          user: {
+            _id: item.user?._id || item.userId,
+            name: item.user?.name || 'Unknown User',
+            email: item.user?.email || 'unknown@email.com',
+            phone: item.user?.phone || '',
+            studentId: item.user?.studentId || '',
+          },
+          device: {
+            _id: item.device?._id || item.deviceId,
+            name: item.device?.name || 'Unknown Device',
+            serialNumber: item.device?.serialNumber || 'N/A',
+            category: item.device?.category || 'Other',
+            imageUrl: item.device?.imageUrl || '',
+          },
+        };
+      }
+      // Nếu đây đã là borrow record, giữ nguyên
+      return item;
+    });
 
-    // Map borrow requests thành borrow records format
-    const mappedRecords = records.map((record: any, index: number) => ({
-      _id: record._id || `record-${index}`,
-      borrowRequestId: record._id,
-      userId: record.userId || record.user?._id,
-      deviceId: record.deviceId || record.device?._id,
-      borrowDate: record.borrowDate || new Date().toISOString(),
-      returnDate: record.returnDate || new Date().toISOString(),
-      actualReturnDate: record.actualReturnDate || null,
-      status: 'borrowed' as const, // Vì đây là approved requests nên status là borrowed
-      note: record.note || '',
-      createdAt: record.createdAt || new Date().toISOString(),
-      updatedAt: record.updatedAt || new Date().toISOString(),
-      borrowRequest: {
-        _id: record._id,
-        purpose: record.purpose || 'No purpose',
-        note: record.note || '',
-      },
-      user: {
-        _id: record.user?._id || 'unknown',
-        name: record.user?.name || 'Unknown User',
-        email: record.user?.email || 'unknown@email.com',
-        phone: record.user?.phone || '',
-        studentId: record.user?.studentId || '',
-        ...record.user,
-      },
-      device: {
-        _id: record.device?._id || 'unknown',
-        name: record.device?.name || 'Unknown Device',
-        serialNumber: record.device?.serialNumber || 'N/A',
-        category: record.device?.category || 'Other',
-        imageUrl: record.device?.imageUrl || '',
-        ...record.device,
-      },
-    }));
-
-    // Calculate statistics từ mapped records
+    // Calculate statistics
     const today = new Date();
     const statistics = {
       totalBorrowed: mappedRecords.filter((r: any) => r.status === 'borrowed').length,
@@ -192,7 +168,7 @@ export const getAllBorrowRecords = async (params: BorrowRecordParams = {}): Prom
       }).length,
     };
 
-    const result = {
+    return {
       data: mappedRecords,
       current: params.current || 1,
       pageSize: params.pageSize || 10,
@@ -200,20 +176,9 @@ export const getAllBorrowRecords = async (params: BorrowRecordParams = {}): Prom
       statistics: statistics,
     };
 
-    console.log('=== FINAL BORROW RECORDS RESULT ===');
-    console.log('Returning result:', result);
-
-    return result;
-
   } catch (error: any) {
     console.error('=== BORROW RECORD SERVICE ERROR ===');
     console.error('Error:', error);
-
-    if (error.response?.status === 401) {
-      console.error('❌ Authentication failed');
-      localStorage.clear();
-      window.location.href = '/auth/login';
-    }
 
     return {
       data: [],
@@ -402,5 +367,29 @@ export const updateState = async (recordId: string, data: { state: string }) => 
     console.error('Error updating record state:', error);
     console.error('Response data:', error.response?.data);
     throw error;
+  }
+};
+
+// Thêm function test để kiểm tra endpoints
+export const testBorrowRecordEndpoints = async () => {
+  console.log('=== TESTING BORROW RECORD ENDPOINTS ===');
+
+  const endpoints = [
+    '/admin/borrow-records',
+    '/admin/borrow-requests?status=approved',
+
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await axios.get(endpoint);
+      console.log(`✅ ${endpoint}:`, {
+        status: response.status,
+        dataLength: response.data?.data?.length || 0,
+        sampleData: response.data?.data?.[0],
+      });
+    } catch (error: any) {
+      console.log(`❌ ${endpoint}:`, error.response?.status, error.message);
+    }
   }
 };

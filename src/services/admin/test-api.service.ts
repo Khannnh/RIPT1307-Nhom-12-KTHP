@@ -71,7 +71,6 @@ export const testBorrowRequestsEndpoint = async () => {
     { params: { status: 'pending' }, description: 'Pending requests only' },
     { params: { status: 'approved' }, description: 'Approved requests only' },
     { params: { status: 'rejected' }, description: 'Rejected requests only' },
-    { params: { limit: 10, page: 1 }, description: 'With pagination' },
     { params: { status: 'pending', limit: 5, page: 1 }, description: 'Pending with pagination' },
   ];
 

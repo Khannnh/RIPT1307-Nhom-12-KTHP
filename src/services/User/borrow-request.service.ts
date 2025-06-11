@@ -113,7 +113,7 @@ export const getBorrowRequests = getUserBorrowRequests;
 
 // Lấy chi tiết yêu cầu mượn - sử dụng tên function đúng
 export async function getBorrowRequestDetail(id: string): Promise<BorrowRequest> {
-  const response = await axios.get(`/api/user/borrow-requests/${id}`);
+  const response = await axios.get(`/user/borrow-requests/${id}`);
   return response.data.data;
 }
 
@@ -122,5 +122,5 @@ export const getBorrowRequestById = getBorrowRequestDetail;
 
 // Hủy yêu cầu mượn
 export async function cancelBorrowRequest(id: string): Promise<void> {
-  await axios.delete(`/api/user/borrow-requests/${id}`);
+  await axios.delete(`/user/borrow-requests/${id}`);
 }

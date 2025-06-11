@@ -72,8 +72,6 @@ export const getAllBorrowRequests = async (params: BorrowRequestParams = {}): Pr
 
     const response = await axios.get('/admin/borrow-requests', {
       params: {
-        page: params.current,
-        limit: params.pageSize,
         status: params.status,
         keyword: params.keyword,
         startDate: params.startDate,
