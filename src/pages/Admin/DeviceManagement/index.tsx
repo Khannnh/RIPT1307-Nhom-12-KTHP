@@ -358,10 +358,9 @@ const DeviceManagement: React.FC = () => {
         await updateDevice(editingDevice.id, values);
         message.success('Cập nhật thiết bị thành công');
       } else {
-        // Ensure availableQuantity defaults to quantity if not set
+        // Create device with proper type casting
         const createData = {
           ...values,
-          availableQuantity: values.availableQuantity || values.quantity,
         } as CreateDeviceRequest;
 
         await createDevice(createData);
@@ -456,13 +455,7 @@ const DeviceManagement: React.FC = () => {
             >
               Làm mới
             </Button>
-            <Button
-              type="dashed"
-              onClick={handleTestAPI}
-              style={{ backgroundColor: '#f0f0f0' }}
-            >
-              Test API
-            </Button>
+
             <Button
               type="ghost"
               onClick={handleCreateSampleData}
@@ -470,17 +463,7 @@ const DeviceManagement: React.FC = () => {
             >
               Tạo dữ liệu mẫu
             </Button>
-            <Button
-              type="ghost"
-              onClick={() => {
-                console.log('Current devices state:', devices);
-                console.log('Current pagination:', pagination);
-                console.log('Current statistics:', statistics);
-                message.info('Kiểm tra Console để xem trạng thái hiện tại');
-              }}
-            >
-              Debug State
-            </Button>
+
           </Space>
           <Button
             type="primary"

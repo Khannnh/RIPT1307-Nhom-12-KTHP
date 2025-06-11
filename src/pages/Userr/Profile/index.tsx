@@ -20,7 +20,7 @@ const { Content } = Layout;
 
 const ProfilePage: React.FC = () => {
   const { initialState } = useModel('@@initialState');
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
@@ -39,7 +39,7 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  const getGenderValue = (display: string) => {
+  const getGenderValue = (display: string): 'male' | 'female' | 'other' | undefined => {
     switch (display) {
       case 'Nam':
         return 'male';
@@ -62,18 +62,8 @@ const ProfilePage: React.FC = () => {
       const response = await getUserProfile();
       console.log('Full Profile API Response:', response);
 
-      let profileData = null;
-      // Handle different response structures
-      if (response?.data?.data) {
-        profileData = response.data.data;
-      } else if (response?.data) {
-        profileData = response.data;
-      } else if (response) {
-        profileData = response;
-      }
-
-      console.log('Processed Profile Data:', profileData);
-      setUserData(profileData);
+      console.log('Processed Profile Data:', response);
+      setUserData(response.data || response);
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       message.error('Không thể tải thông tin người dùng');
