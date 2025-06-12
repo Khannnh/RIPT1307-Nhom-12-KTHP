@@ -1,42 +1,19 @@
 import React from 'react';
-import { Table, Tag, Space, Typography, Card, Layout } from 'antd';
-import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import { PageContainer } from '@ant-design/pro-layout';
+import { Table, Tag, Space, Typography, Card, Layout, Button, message } from 'antd';
+import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table/interface';
+import { cancelBorrowRequest, type BorrowRequest } from '@/services/borrow-request.service';
+import dayjs from 'dayjs';
 import styles from './index.less';
+import useHistory from '@/hooks/useHistory';
 
 const { Title } = Typography;
 const { Content } = Layout;
 
-interface HistoryItem {
-  key: string;
-  deviceName: string;
-  borrowDate: string;
-  returnDate: string;
-  status: 'pending' | 'approved' | 'rejected' | 'returned';
-  requestId: string;
-}
-
-// Mock data for history
-const mockData: HistoryItem[] = [
-  {
-    key: '1',
-    deviceName: 'Laptop Dell XPS 13',
-    borrowDate: '2024-03-15 09:00',
-    returnDate: '2024-03-16 17:00',
-    status: 'returned',
-    requestId: 'REQ001',
-  },
-  {
-    key: '2',
-    deviceName: 'Máy chiếu Epson',
-    borrowDate: '2024-03-20 13:00',
-    returnDate: '2024-03-21 17:00',
-    status: 'pending',
-    requestId: 'REQ002',
-  },
-  // Add more history items as needed
-];
+// Nếu cần, mở rộng interface BorrowRequest ở đây cho đúng dữ liệu thực tế
+type BorrowRequestWithDevice = BorrowRequest & {
+  device?: any[];
+};
 
 const getStatusTag = (status: string) => {
   switch (status) {
@@ -54,30 +31,44 @@ const getStatusTag = (status: string) => {
 };
 
 const HistoryPage: React.FC = () => {
-  const columns: ColumnsType<HistoryItem> = [
+  const { data, pagination, loading, refetch } = useHistory();
+
+  const handleCancel = async (id: string) => {
+    try {
+      await cancelBorrowRequest(id);
+      message.success('Hủy yêu cầu thành công');
+      refetch();
+    } catch (error) {
+      message.error('Không thể hủy yêu cầu');
+    }
+  };
+
+  const columns: ColumnsType<BorrowRequestWithDevice> = [
     {
-      title: 'Mã yêu cầu',
-      dataIndex: 'requestId',
-      key: 'requestId',
+      title: 'Số lượng',
+      key: 'quantity',
       width: 120,
+      render: (_: any, record: BorrowRequestWithDevice) => record.device?.[0]?.quantity ?? '',
     },
     {
       title: 'Tên thiết bị',
-      dataIndex: 'deviceName',
       key: 'deviceName',
       width: 200,
+      render: (_: any, record: BorrowRequestWithDevice) => record.device?.[0]?.name || '',
     },
     {
       title: 'Ngày mượn',
       dataIndex: 'borrowDate',
       key: 'borrowDate',
       width: 150,
+      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
-      title: 'Ngày trả',
+      title: 'Ngày dự định trả',
       dataIndex: 'returnDate',
       key: 'returnDate',
       width: 150,
+      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
       title: 'Trạng thái',
@@ -86,28 +77,48 @@ const HistoryPage: React.FC = () => {
       width: 150,
       render: (status: string) => getStatusTag(status),
     },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      width: 100,
+      render: (_: any, record: BorrowRequestWithDevice) => (
+        <Space>
+          {record.status === 'pending' && (
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleCancel(record.id)}
+            >
+              Hủy
+            </Button>
+          )}
+        </Space>
+      ),
+    },
   ];
 
   return (
     <Content className={styles.content}>
-      <PageContainer>
-        <div className={styles.container}>
-          <Card className={styles.historyCard}>
-            <Title level={2} className={styles.title}>Lịch sử mượn thiết bị</Title>
-            <Table
-              columns={columns}
-              dataSource={mockData}
-              className={styles.table}
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showTotal: (total) => `Tổng số ${total} bản ghi`,
-              }}
-              scroll={{ x: 'max-content' }}
-            />
-          </Card>
-        </div>
-      </PageContainer>
+      <div className={styles.container}>
+        <Card className={styles.historyCard}>
+          <Title level={2} className={styles.title}>Lịch sử mượn thiết bị</Title>
+          <Table
+            columns={columns}
+            dataSource={data}
+            loading={loading}
+            rowKey="id"
+            className={styles.table}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              showTotal: (total: number, range: [number, number]) =>
+              `Tổng số ${total} bản ghi (hiển thị ${range[0]}-${range[1]})`,
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </Card>
+      </div>
     </Content>
   );
 };

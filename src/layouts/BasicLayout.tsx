@@ -3,6 +3,7 @@ import { Layout, Menu, Dropdown, Avatar, Space, Typography, Button, message } fr
 import {
   HomeOutlined,
   AppstoreOutlined,
+  HistoryOutlined,
   BarChartOutlined,
   UserOutlined,
   LogoutOutlined,
@@ -62,8 +63,8 @@ const BasicLayout: React.FC = ({ children }) => {
     },
     {
       key: '/statistics',
-      icon: <BarChartOutlined />,
-      label: <Link to="/statistics">Thống kê</Link>,
+      icon: <HistoryOutlined />,
+      label: <Link to="/statistics">Lịch sử mượn trả</Link>,
     },
   ];
 

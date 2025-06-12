@@ -20,14 +20,16 @@ export interface CreateBorrowRequestParams {
   returnDate: string;
   purpose: string;
 }
-
+//lấy danh sách lịch sử mượn của mìnhmình
+export const getUserBorrowRequests = async () => {
+  const response = await axios.get('/user/borrow-requests');
+  return {
+    data: response.data.data.data,
+    pagination: response.data.data.pagination,
+  };
+};
 export const createBorrowRequest = async (params: CreateBorrowRequestParams): Promise<BorrowRequest> => {
   const response = await axios.post('/user/borrow-requests', params);
-  return response.data;
-};
-
-export const getUserBorrowRequests = async (): Promise<BorrowRequest[]> => {
-  const response = await axios.get('/user/borrow-requests');
   return response.data;
 };
 
